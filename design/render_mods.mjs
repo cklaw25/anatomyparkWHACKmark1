@@ -10,7 +10,8 @@ const states = [
   ['IV line + O2 mask + defib pads', M([['iv_line', 'left_arm'], ['oxygen_mask', 'face'], ['defib_pads', 'chest']])],
   ['Cast + sling + neck brace', M([['cast', 'right_arm'], ['sling', 'right_arm'], ['neck_brace', 'neck']])],
   ['Trauma: tourniquet, chest tube, catheter', M([['tourniquet', 'left_leg'], ['chest_tube', 'chest'], ['catheter', 'pelvis'], ['dressing', 'abdomen']])],
-  ['Laparotomy stitches + leg bandage', M([['stitches', 'abdomen'], ['bandage', 'left_leg']])],
+  ['"Amputate both legs"', T('Amputate both legs', 'surgery', 'abdomen')],
+  ['Left leg off + tourniquet', T('Amputate left leg, tourniquet', 'surgery', 'left_leg')],
 ];
 const inner = `<style>.fx-label{font:bold 26px Bahnschrift,sans-serif;fill:#fff}</style>`;
 const cards = states.map(([title, mods]) => { const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 0 480 880" width="330" height="605">${inner}${drawPatient([], { mods })}</svg>`; return `<figure><img src="data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}"><figcaption>${title}</figcaption></figure>`; }).join('');

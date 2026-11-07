@@ -47,12 +47,18 @@ export const isGone = (mods, part) => mods.some(m => m.change === 'amputate' && 
 export function inferChanges(tr, dropPart) {
   const s = `${tr.name} ${tr.detail || ''}`.toLowerCase();
   const side = /\bleft\b/.test(s) ? 'left' : /\bright\b/.test(s) ? 'right' : null;
-  const limb = /\b(leg|foot|knee|thigh|shin|ankle)\b/.test(s) ? 'leg' : /\b(arm|hand|wrist|elbow|forearm|finger)\b/.test(s) ? 'arm' : null;
+  const four = /all (four|limbs)|quadruple|every limb|\blimbs\b/.test(s);
+  const limb = /\b(legs?|feet|foot|knees?|thighs?|shins?|ankles?)\b/.test(s) ? 'leg' : /\b(arms?|hands?|wrists?|elbows?|forearms?|fingers?)\b/.test(s) ? 'arm' : null;
+  const both = /\bboth\b|bilateral|\b(legs|arms|feet|hands)\b/.test(s);
   let part = dropPart;
   if (limb) part = `${side || (dropPart?.startsWith('right') ? 'right' : 'left')}_${limb}`;
   const out = [];
   const add = (change, p = part) => out.push({ change, part: p });
-  if (/amputat|remove (the |his |her )?(arm|leg|hand|foot)|cut (off|the) (arm|leg)/.test(s)) add('amputate', LIMBS.includes(part) ? part : 'left_arm');
+  if (/amputat|remove (the |his |her |both )?(arms?|legs?|hands?|feet|foot)|cut (off )?(the |his |her |both )?(arms?|legs?)|chop/.test(s)) {
+    if (four) LIMBS.forEach(l => add('amputate', l));
+    else if (both && limb) { add('amputate', `left_${limb}`); add('amputate', `right_${limb}`); }
+    else add('amputate', LIMBS.includes(part) ? part : 'left_arm');
+  }
   else if (/prosthe/.test(s)) add('prosthetic');
   if (/\bcast\b|splint|plaster/.test(s)) add('cast');
   if (/sling/.test(s)) add('sling', part?.includes('right') ? 'right_arm' : 'left_arm');
