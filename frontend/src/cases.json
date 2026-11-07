@@ -1,0 +1,577 @@
+[
+ {
+  "root_cause": "Cerebral venous sinus thrombosis (clot in brain drainage vein), from estrogen pill plus dehydration",
+  "root_site": "brain",
+  "patient": {
+   "name": "Maya Lindqvist",
+   "age": 21,
+   "background": "Biology student, started combined contraceptive pill 6 weeks ago; mother had 'leg clot'."
+  },
+  "day_events": [
+   {
+    "time": "07:30",
+    "text": "Skipped water, hungover",
+    "clue": true
+   },
+   {
+    "time": "09:00",
+    "text": "Took ibuprofen for headache",
+    "clue": false
+   },
+   {
+    "time": "11:15",
+    "text": "Vomited in lecture hall",
+    "clue": false
+   },
+   {
+    "time": "13:00",
+    "text": "Took daily birth control pill",
+    "clue": true
+   },
+   {
+    "time": "14:40",
+    "text": "Headache worse when lying",
+    "clue": false
+   },
+   {
+    "time": "16:20",
+    "text": "Dropped coffee, right hand weak",
+    "clue": false
+   }
+  ],
+  "initial_symptoms": [
+   {
+    "site": "brain",
+    "text": "Worsening headache for three days",
+    "severity": 0.6
+   },
+   {
+    "site": "stomach",
+    "text": "Repeated vomiting, can't keep water",
+    "severity": 0.5
+   },
+   {
+    "site": "skin",
+    "text": "Pale, clammy, dry lips",
+    "severity": 0.3
+   }
+  ],
+  "findings": [
+   {
+    "site": "brain",
+    "system": "circulatory",
+    "result": "Left drainage vein blocked, no flow: sinus thrombosis",
+    "key": true
+   },
+   {
+    "site": "brain",
+    "system": "nervous",
+    "result": "Swollen optic discs from high skull pressure: papilledema",
+    "key": true
+   },
+   {
+    "site": "blood",
+    "system": "circulatory",
+    "result": "Clot breakdown marker very high: elevated D-dimer",
+    "key": true
+   },
+   {
+    "site": "blood",
+    "system": "organs",
+    "result": "Inherited clotting tendency gene present: Factor V Leiden",
+    "key": true
+   },
+   {
+    "site": "stomach",
+    "system": "digestive",
+    "result": "Mild lining irritation from ibuprofen: gastritis",
+    "key": false
+   },
+   {
+    "site": "kidneys",
+    "system": "organs",
+    "result": "Concentrated urine, mild dehydration: raised urea",
+    "key": false
+   },
+   {
+    "site": "lungs",
+    "system": "respiratory",
+    "result": "Clear lungs, no clots: normal perfusion",
+    "key": false
+   },
+   {
+    "site": "left_leg",
+    "system": "circulatory",
+    "result": "Deep veins compress normally, no DVT",
+    "key": false
+   },
+   {
+    "site": "spinal_cord",
+    "system": "nervous",
+    "result": "Spinal fluid clear, no infection: normal CSF",
+    "key": false
+   },
+   {
+    "site": "liver",
+    "system": "digestive",
+    "result": "Slightly raised enzymes from alcohol: mild transaminitis",
+    "key": false
+   }
+  ],
+  "treatments": [
+   {
+    "name": "Heparin (blood thinner) + fluids",
+    "correct": true,
+    "why": "Anticoagulation stops the venous clot growing and lets the sinus reopen, even if small bleeds exist; stop the pill.",
+    "if_wrong_cascade": [],
+    "attending_line": "A blood thinner for a headache. Congratulations, you read the venogram."
+   },
+   {
+    "name": "Sumatriptan (migraine drug)",
+    "correct": false,
+    "why": "Triptans constrict blood vessels, worsening flow in an already congested brain and promoting venous infarction.",
+    "if_wrong_cascade": [
+     {
+      "site": "brain",
+      "text": "Seizure, right side twitching",
+      "severity": 0.8
+     },
+     {
+      "site": "heart",
+      "text": "Chest tightness, vessel spasm",
+      "severity": 0.4
+     }
+    ],
+    "attending_line": "Migraine in a 21-year-old with a weak hand. Bold. Wrong, but bold."
+   },
+   {
+    "name": "Dexamethasone (steroid)",
+    "correct": false,
+    "why": "Steroids don't help sinus thrombosis and increase clotting risk, plus raise blood sugar.",
+    "if_wrong_cascade": [
+     {
+      "site": "blood",
+      "text": "High blood sugar, more clotting",
+      "severity": 0.5
+     },
+     {
+      "site": "brain",
+      "text": "Confusion, venous bleed expanding",
+      "severity": 0.7
+     }
+    ],
+    "attending_line": "Steroids: when you don't know what it is, make it worse anti-inflammatorily."
+   },
+   {
+    "name": "Morphine + anti-nausea drip",
+    "correct": false,
+    "why": "Masks pain while the clot grows; opioid sedation raises CO2, widening brain vessels and skull pressure.",
+    "if_wrong_cascade": [
+     {
+      "site": "lungs",
+      "text": "Slow shallow breathing",
+      "severity": 0.6
+     },
+     {
+      "site": "brain",
+      "text": "Drowsy, pupils unequal, rising pressure",
+      "severity": 0.9
+     }
+    ],
+    "attending_line": "She's comfortable now. So is anyone in a coma."
+   }
+  ],
+  "post_mortem": "Estrogen from her new pill, an inherited Factor V Leiden mutation, and hangover dehydration caused a clot in a brain drainage vein, raising skull pressure. The clues were a headache worse lying down, a new pill, a family clotting history, and a weak hand, which together point away from migraine.",
+  "_source": "claude-opus-5-5"
+ },
+ {
+  "root_cause": "Infectious mononucleosis (Epstein-Barr virus) with enlarged spleen",
+  "root_site": "blood",
+  "patient": {
+   "name": "Jordan Okafor",
+   "age": 19,
+   "background": "First-year student, rugby player, new girlfriend; no medical history, no allergies."
+  },
+  "day_events": [
+   {
+    "time": "07:30",
+    "text": "Overslept, still exhausted",
+    "clue": true
+   },
+   {
+    "time": "09:00",
+    "text": "Skipped lecture, swallowing hurts",
+    "clue": false
+   },
+   {
+    "time": "11:15",
+    "text": "Shared girlfriend's water bottle",
+    "clue": true
+   },
+   {
+    "time": "13:00",
+    "text": "Ate only ice cream",
+    "clue": false
+   },
+   {
+    "time": "15:30",
+    "text": "Left rugby practice, side ache",
+    "clue": true
+   },
+   {
+    "time": "16:45",
+    "text": "Clinic visit, fever 38.9\u00b0C",
+    "clue": false
+   }
+  ],
+  "initial_symptoms": [
+   {
+    "site": "lungs",
+    "text": "Severe sore throat, white tonsil patches",
+    "severity": 0.7
+   },
+   {
+    "site": "brain",
+    "text": "Crushing fatigue for two weeks",
+    "severity": 0.6
+   },
+   {
+    "site": "skin",
+    "text": "Swollen tender lumps in neck",
+    "severity": 0.4
+   }
+  ],
+  "findings": [
+   {
+    "site": "blood",
+    "system": "circulatory",
+    "result": "Many large odd white cells: atypical lymphocytes",
+    "key": true
+   },
+   {
+    "site": "blood",
+    "system": "organs",
+    "result": "Monospot test positive: heterophile antibodies",
+    "key": true
+   },
+   {
+    "site": "liver",
+    "system": "organs",
+    "result": "Liver enzymes mildly raised: viral hepatitis pattern",
+    "key": true
+   },
+   {
+    "site": "bone_marrow",
+    "system": "skeletal",
+    "result": "Spleen enlarged under left ribs: splenomegaly",
+    "key": true
+   },
+   {
+    "site": "lungs",
+    "system": "respiratory",
+    "result": "Tonsils swollen with white exudate: tonsillitis",
+    "key": false
+   },
+   {
+    "site": "blood",
+    "system": "circulatory",
+    "result": "Rapid strep test negative: no Streptococcus",
+    "key": false
+   },
+   {
+    "site": "heart",
+    "system": "circulatory",
+    "result": "Fast but regular heartbeat: sinus tachycardia from fever",
+    "key": false
+   },
+   {
+    "site": "lungs",
+    "system": "respiratory",
+    "result": "Lungs clear, no pneumonia: normal auscultation",
+    "key": false
+   },
+   {
+    "site": "kidneys",
+    "system": "organs",
+    "result": "Urine slightly concentrated: mild dehydration",
+    "key": false
+   },
+   {
+    "site": "brain",
+    "system": "nervous",
+    "result": "No neck stiffness, alert: meningitis unlikely",
+    "key": false
+   }
+  ],
+  "treatments": [
+   {
+    "name": "Rest, fluids, no contact sports",
+    "correct": true,
+    "why": "EBV is viral so antibiotics do nothing; supportive care plus avoiding sport for weeks protects the swollen, fragile spleen.",
+    "if_wrong_cascade": [],
+    "attending_line": "Boring, correct, and nobody gets an itchy rash. I hate how right you are."
+   },
+   {
+    "name": "Amoxicillin (antibiotic)",
+    "correct": false,
+    "why": "Antibiotics don't kill viruses, and amoxicillin in mono triggers a widespread rash in most patients.",
+    "if_wrong_cascade": [
+     {
+      "site": "skin",
+      "text": "Itchy red rash covering whole body",
+      "severity": 0.6
+     },
+     {
+      "site": "intestines",
+      "text": "Watery diarrhea from gut flora disruption",
+      "severity": 0.4
+     }
+    ],
+    "attending_line": "Congratulations, you treated a virus with penicillin. He's now polka-dotted."
+   },
+   {
+    "name": "IV ceftriaxone, admit",
+    "correct": false,
+    "why": "Broad-spectrum antibiotics miss the virus and wipe out gut bacteria, letting C. difficile take over.",
+    "if_wrong_cascade": [
+     {
+      "site": "intestines",
+      "text": "Bloody diarrhea, C. difficile colitis",
+      "severity": 0.7
+     },
+     {
+      "site": "liver",
+      "text": "Gallbladder sludge, upper right pain",
+      "severity": 0.3
+     }
+    ],
+    "attending_line": "Bigger gun, same imaginary bacteria. The C. diff thanks you."
+   },
+   {
+    "name": "Ibuprofen, clear for rugby",
+    "correct": false,
+    "why": "A tackle can rupture the enlarged spleen, and NSAIDs impair platelets, worsening the internal bleeding.",
+    "if_wrong_cascade": [
+     {
+      "site": "blood",
+      "text": "Internal bleeding, spleen rupture",
+      "severity": 0.9
+     },
+     {
+      "site": "heart",
+      "text": "Racing pulse, blood pressure dropping",
+      "severity": 0.8
+     },
+     {
+      "site": "brain",
+      "text": "Dizzy, confused, nearly fainting",
+      "severity": 0.6
+     }
+    ],
+    "attending_line": "Great, send the walking water balloon into a scrum. What could go wrong?"
+   }
+  ],
+  "post_mortem": "Jordan caught Epstein-Barr virus through saliva, and it looked exactly like strep throat, but the negative strep test, atypical lymphocytes and enlarged spleen showed it was mono. A good doctor would have noticed the shared water bottle, two weeks of exhaustion and the left-side ache at rugby, and kept him off antibiotics and off the pitch.",
+  "_source": "claude-opus-5-5"
+ },
+ {
+  "root_cause": "Meningococcal meningitis with septicemia (Neisseria meningitidis)",
+  "root_site": "brain",
+  "patient": {
+   "name": "Maya Okafor",
+   "age": 19,
+   "background": "First-year student, new dorm, skipped campus meningitis vaccine. Otherwise healthy."
+  },
+  "day_events": [
+   {
+    "time": "07:30",
+    "text": "Woke after dorm party",
+    "clue": false
+   },
+   {
+    "time": "09:00",
+    "text": "Roommate shared her vape",
+    "clue": true
+   },
+   {
+    "time": "11:15",
+    "text": "Skipped lecture, legs aching",
+    "clue": false
+   },
+   {
+    "time": "13:00",
+    "text": "Took ibuprofen, felt shivery",
+    "clue": false
+   },
+   {
+    "time": "15:30",
+    "text": "Closed curtains, light hurt",
+    "clue": true
+   },
+   {
+    "time": "16:45",
+    "text": "Friend noticed spots on shins",
+    "clue": false
+   }
+  ],
+  "initial_symptoms": [
+   {
+    "site": "left_leg",
+    "text": "Deep aching leg pain, cold feet",
+    "severity": 0.5
+   },
+   {
+    "site": "stomach",
+    "text": "Nausea and vomiting",
+    "severity": 0.4
+   },
+   {
+    "site": "brain",
+    "text": "Headache, hates bright light",
+    "severity": 0.6
+   }
+  ],
+  "findings": [
+   {
+    "site": "spinal_cord",
+    "system": "nervous",
+    "result": "Cloudy spinal fluid, many white cells: bacterial meningitis",
+    "key": true
+   },
+   {
+    "site": "blood",
+    "system": "circulatory",
+    "result": "Bean-shaped paired bacteria: gram-negative diplococci",
+    "key": true
+   },
+   {
+    "site": "skin",
+    "system": "organs",
+    "result": "Purple spots don't fade when pressed: petechiae",
+    "key": true
+   },
+   {
+    "site": "blood",
+    "system": "circulatory",
+    "result": "Platelets dropping, clotting factors used up: early DIC",
+    "key": true
+   },
+   {
+    "site": "brain",
+    "system": "nervous",
+    "result": "Mild swelling of brain linings: meningeal inflammation",
+    "key": false
+   },
+   {
+    "site": "left_leg",
+    "system": "skeletal",
+    "result": "Bones and muscle normal; pain from poor perfusion",
+    "key": false
+   },
+   {
+    "site": "stomach",
+    "system": "digestive",
+    "result": "Mild lining irritation from alcohol: gastritis",
+    "key": false
+   },
+   {
+    "site": "lungs",
+    "system": "respiratory",
+    "result": "Clear lungs, fast breathing: tachypnea",
+    "key": false
+   },
+   {
+    "site": "kidneys",
+    "system": "organs",
+    "result": "Slightly reduced filtering: early acute kidney injury",
+    "key": false
+   },
+   {
+    "site": "joints",
+    "system": "skeletal",
+    "result": "No fluid or swelling: normal joints",
+    "key": false
+   }
+  ],
+  "treatments": [
+   {
+    "name": "IV ceftriaxone, immediately",
+    "correct": true,
+    "why": "A third-generation cephalosporin crosses inflamed meninges and quickly kills Neisseria; hours matter.",
+    "if_wrong_cascade": [],
+    "attending_line": "Look at that, the antibiotic for the bacteria. Revolutionary."
+   },
+   {
+    "name": "Acyclovir (antiviral)",
+    "correct": false,
+    "why": "Treats herpes encephalitis but does nothing to bacteria, so sepsis keeps progressing.",
+    "if_wrong_cascade": [
+     {
+      "site": "skin",
+      "text": "Spots merge into purpura fulminans",
+      "severity": 0.8
+     },
+     {
+      "site": "kidneys",
+      "text": "Adrenal bleed, blood pressure crashes",
+      "severity": 0.9
+     },
+     {
+      "site": "heart",
+      "text": "Septic shock, racing weak pulse",
+      "severity": 0.8
+     }
+    ],
+    "attending_line": "Great, you've cured a virus she doesn't have."
+   },
+   {
+    "name": "Heparin for leg clot",
+    "correct": false,
+    "why": "Leg pain is sepsis-related poor perfusion, not a DVT; anticoagulating someone in DIC with low platelets triggers bleeding.",
+    "if_wrong_cascade": [
+     {
+      "site": "brain",
+      "text": "Bleeding into brain, sudden confusion",
+      "severity": 0.9
+     },
+     {
+      "site": "stomach",
+      "text": "Vomiting blood from gastritis",
+      "severity": 0.7
+     },
+     {
+      "site": "blood",
+      "text": "Platelets bottom out",
+      "severity": 0.8
+     }
+    ],
+    "attending_line": "She's already bleeding into her skin. Let's help it along."
+   },
+   {
+    "name": "Fluids and antiemetic only",
+    "correct": false,
+    "why": "Treating nausea as gastroenteritis delays antibiotics while bacteria multiply in blood and meninges.",
+    "if_wrong_cascade": [
+     {
+      "site": "brain",
+      "text": "Seizures and dropping consciousness",
+      "severity": 0.9
+     },
+     {
+      "site": "left_leg",
+      "text": "Toes turning black, gangrene",
+      "severity": 0.7
+     },
+     {
+      "site": "lungs",
+      "text": "Fluid-filled lungs, struggling to breathe",
+      "severity": 0.6
+     }
+    ],
+    "attending_line": "Hangover protocol for a girl with a rash. Bold."
+   }
+  ],
+  "post_mortem": "Maya picked up Neisseria meningitidis from her roommate's vape and the crowded dorm, and it spread from her throat into her blood and meninges. The leg pain and cold feet came first and pointed away from the brain, but light sensitivity plus non-blanching spots in an unvaccinated student meant ceftriaxone right away.",
+  "_source": "claude-opus-5-5"
+ }
+]
