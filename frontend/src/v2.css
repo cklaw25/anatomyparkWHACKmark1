@@ -119,3 +119,5 @@ body.chat-open #chat { transform: none; }
 #grid { grid-template-rows: 100%; }
 #centre { min-height: 0; overflow: hidden; }
 #stage svg#body { position: absolute; inset: 0; }
+
+#offline-banner { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); background: #5a0f0f; color: #fff; border: 2px solid var(--red); border-radius: 8px; padding: 8px 14px; font: 13px Consolas, monospace; z-index: 50; max-width: 90vw; }

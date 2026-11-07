@@ -277,8 +277,13 @@ async function sendChat() {
   for (const tr of reply.treatments) fetchArt(tr);          // start drawing the items before you even click PREPARE
 }
 
+function offline(why) {
+  const b = document.createElement('div'); b.id = 'offline-banner';
+  b.textContent = `⚠ OFFLINE: ${why}. The fellow, outcomes and art are canned. Run: cd backend && python -m uvicorn main:app --port 8010, then reload.`;
+  document.body.appendChild(b);
+}
 function offlineFellow() {
-  return { say: `Pager's glitching, so I'm going from memory. Here's what I'd consider. Pick carefully.`, differential: [], suggest_scan: '',
+  return { say: `⚠ OFFLINE MODE: the Claude backend (port 8010) is not running, so these are the case's 4 canned options. Start the backend for the real fellow.`, differential: [], suggest_scan: '',
     treatments: C.treatments.map(x => ({ name: x.name, detail: '', kind: guessKind(x.name), target_site: C.root_site, treats: '?', risk: 'unknown' })) };
 }
 
@@ -506,6 +511,8 @@ window.addEventListener('keydown', (e) => {
   $('chat-in').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
   $('paste-notes').onclick = () => { const lines = evidence.slice(sharedUpTo).map(evLine); sharedUpTo = evidence.length; $('chat-in').value += (($('chat-in').value ? '\n' : '') + lines.join('\n')); renderChat(); $('chat-in').focus(); };
   C = await loadCase();
+  // make offline mode impossible to miss: without the backend the fellow is canned
+  fetch(API + '/health').then(r => r.json()).then(h => { if (!h.key_set) offline('backend has no API key'); }).catch(() => offline('backend on :8010 not running'));
   findings = [...C.findings];
   visPromise = effectsFor(C.initial_symptoms);     // the visual pipeline runs while you read the intro
   setMode('outside'); renderDay(); renderVitals(); renderEvidence(); renderTray(); renderLog();

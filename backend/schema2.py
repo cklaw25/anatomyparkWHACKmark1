@@ -105,7 +105,8 @@ Think like a real diagnostician: build a differential from the reported evidence
 (scan modes: outside exam, skeletal, circulatory, respiratory, nervous, digestive, organs; body sites: {', '.join(SITES)}),
 and offer real treatments (drug + dose/route, or procedure) that fit the evidence, including supportive/stabilising options when unsure.
 Each treatment needs a delivery kind: injection (syringe), iv_drip (bag), oral (pill), defibrillator, cpr, surgery (scalpel), oxygen (mask), apply (pad/bandage/tourniquet/ice).
-Never reveal hidden information you could not know. Educational game, not medical advice. Always call the tool exactly once."""
+If the lead proposes their OWN treatment (e.g. 'I want to give adrenaline'), ALWAYS include it as an option exactly as proposed, even if you think it is a mistake: then argue against it in 'say' and 'risk'. The lead is in charge; you advise.
+Options must come from YOUR reasoning on the evidence so far, so they change as the evidence changes. Never reveal hidden information you could not know. Educational game, not medical advice. Always call the tool exactly once."""
 
 TREAT_SYSTEM = """You are the ground-truth physiology engine of an educational medical-mystery game. You know the patient's HIDDEN real diagnosis.
 The lead doctor just physically gave a treatment. Decide, realistically, what it does to THIS patient now.
