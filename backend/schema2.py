@@ -81,8 +81,13 @@ TREAT_TOOL = {
                                "severity": {"type": "number"}, "effects": {"type": "array", "items": _effect}},
                 "required": ["site", "text", "severity", "effects"]}},
             "new_findings": {"type": "array", "items": _finding, "description": "0-3 scan findings that now appear"},
+            "body_changes": {"type": "array", "description": "VISIBLE physical changes to the body from this act (amputate a limb, cast, stitches, drain, mask...); usually 0-2", "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {"change": {"type": "string", "enum": ["amputate", "prosthetic", "cast", "bandage", "stitches", "sling", "tourniquet", "iv_line", "oxygen_mask", "chest_tube", "defib_pads", "neck_brace", "dressing", "catheter", "remove"]},
+                               "part": {"type": "string", "enum": ["left_arm", "right_arm", "left_leg", "right_leg", "head", "face", "neck", "chest", "abdomen", "pelvis"]}},
+                "required": ["change", "part"]}},
         },
-        "required": ["outcome", "narration", "physiology", "resolve_sites", "new_symptoms", "new_findings"],
+        "required": ["outcome", "narration", "physiology", "resolve_sites", "new_symptoms", "new_findings", "body_changes"],
     },
 }
 
@@ -115,6 +120,7 @@ Contraindicated or harmful for the real diagnosis = 'worse' or 'much_worse' with
 e.g. steroids in an infection, anticoagulants in a bleed, beta-blockers in cocaine toxicity.
 'lethal' = the treatment itself stops the heart or breathing NOW (e.g. defibrillating a heart in normal or sinus rhythm can trigger VF arrest, potassium bolus, massive overdose, paralytic without airway, cutting a major vessel). Also use 'lethal' if the patient is already very critical and this wrong treatment tips them over. If the patient is IN CARDIAC ARREST, correct CPR/defibrillation/adrenaline = 'improving' (ROSC).
 Doses matter: overdoses are harmful. The lead may give anything they like, including things nobody suggested: judge it honestly.
+The body may already be changed (body_changes_so_far, e.g. an amputated arm): respect it, a missing limb stays missing and an amputation causes real blood loss/shock unless controlled.
 Delivery matters: wrong site/route can blunt or change the effect (say so in physiology).
 new_symptoms must include visible effects (what an onlooker sees). Keep text short and readable for non-doctors.
 Educational game, not medical advice. Always call the tool exactly once."""

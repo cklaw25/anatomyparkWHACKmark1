@@ -154,7 +154,7 @@ async def chat(body: dict):
         msgs.insert(0, {"role": "user", "content": "(the lead pages you)"})
     p = body.get("patient") or {}
     ctx = {"patient": {"name": p.get("name"), "age": p.get("age")}, "clock": body.get("clock"), "monitor_vitals": body.get("vitals"),
-           "treatments_given_and_results": body.get("treatments", [])}
+           "treatments_given_and_results": body.get("treatments", []), "visible_body_changes": body.get("body_changes", [])}
     note = "\n\n[context, not typed by the lead: " + json.dumps(ctx) + "]"
     if msgs and msgs[-1]["role"] == "user":
         msgs[-1]["content"] += note
@@ -176,6 +176,7 @@ async def treat(body: dict):
     hidden = {k: case.get(k) for k in ("root_cause", "root_site", "patient", "day_events", "post_mortem")}
     user = ("HIDDEN CASE: " + json.dumps(hidden) + "\nCURRENT PROBLEMS: " + json.dumps(body.get("symptoms", []))
             + "\nVITALS: " + json.dumps(body.get("vitals", {})) + "\nEARLIER TREATMENTS: " + json.dumps(body.get("history", []))
+            + "\nBODY CHANGES SO FAR: " + json.dumps(body.get("body_changes_so_far", []))
             + "\nTREATMENT JUST GIVEN: " + json.dumps(body.get("treatment", {})))
     for model in dict.fromkeys((TREAT_MODEL, FAST_MODEL)):
         try:

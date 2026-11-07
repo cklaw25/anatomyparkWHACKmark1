@@ -2,6 +2,7 @@
 // -> prepare the treatments he suggests -> physically deliver them (drag + hold / shock / cut / compress) -> the body reacts.
 import { SITES, MODES as SCAN_MODES, MODE_SITES, layer, route } from './anatomy.js';
 import { drawPatient, hologram, guessEffects, MOUTH } from './patient.js';
+import { partAt, applyChanges, inferChanges } from './mods.js';
 import { ICONS, ACTIONS, guessKind, safeSvg } from './tools.js';
 import { Body } from './sim.js';
 import FALLBACK from './cases.json';
@@ -21,6 +22,7 @@ let C = null;
 const body = new Body();
 let mode = 'outside', bot = { site: 'heart', x: SITES.heart.x, y: SITES.heart.y }, path = null, testing = null;
 let findings = [], evidence = [], log = [], visuals = [], treatHistory = [], tray = [], action = null;
+let mods = [];
 let chat = [], chatOpen = false, chatBusy = false, busy = false, sharedUpTo = 0;
 let t = 0, started = false, over = false, onset = false, lastSay = -99, idleTimer = 0, flags = {}, paged = false;
 let visPromise = null;
@@ -111,10 +113,10 @@ function drawStatic() {
 function drawPatientNow(force) {
   if (mode !== 'outside' || !$('pt')) return;
   const fx = onset ? activeEffects() : [];
-  const sig = fx.map(e => e.type + e.site + e.side + Math.round(e.k * 10)).join('|') + (body.v.rr > 24 ? 'F' : 'S');
+  const sig = fx.map(e => e.type + e.site + e.side + Math.round(e.k * 10)).join('|') + (body.v.rr > 24 ? 'F' : 'S') + mods.map(x => x.change + x.part + (Date.now() - x.t < 25000)).join(',');
   if (!force && sig === lastSig) return;
   lastSig = sig;
-  $('pt').innerHTML = drawPatient(fx, { breathFast: body.v.rr > 24 ? 1 : 0 });
+  $('pt').innerHTML = drawPatient(fx, { breathFast: body.v.rr > 24 ? 1 : 0, mods });
 }
 
 function drawDynamic() {
@@ -269,6 +271,7 @@ async function sendChat() {
       history: chat.map(m => ({ role: m.role, text: m.reply ? m.reply.say + ` [my differential: ${m.reply.differential.map(d => d.condition).join(', ')}; offered: ${m.reply.treatments.map(x => x.name).join(', ')}]` : m.text })),
       patient: { name: C.patient.name, age: C.patient.age }, clock: clock(), vitals: vitalsNow(),
       treatments: treatHistory.map(h => ({ name: h.name, result: h.outcome, what_happened: h.narration })),
+      body_changes: mods.map(x => `${x.change} ${x.part.replace('_', ' ')}`),
     });
     if (j.ok) reply = j.reply;
   } catch { /* offline */ }
@@ -346,7 +349,8 @@ window.addEventListener('pointerup', (ev) => {
     let site = 'heart', best = 1e9;
     for (const [id, s] of Object.entries(SITES)) { const d = Math.hypot(s.x - p.x, s.y - p.y); if (d < best) { best = d; site = id; } }
     const onMouth = Math.hypot(p.x - MOUTH.x, p.y - MOUTH.y) < 40;
-    action = { item, x: p.x, y: p.y, site, where: onMouth ? 'mouth/face' : SITES[site].label, cfg: ACTIONS[item.tr.kind], p: 0, holding: false, clicks: 0, cut: 0, charged: false };
+    const part = onMouth ? 'face' : partAt(p.x, p.y);
+    action = { item, x: p.x, y: p.y, site, part, where: (onMouth ? 'mouth/face' : SITES[site].label) + ` (${part.replace('_', ' ')})`, cfg: ACTIONS[item.tr.kind], p: 0, holding: false, clicks: 0, cut: 0, charged: false };
     drawDynamic(); return;
   }
   if (action) {
@@ -383,17 +387,17 @@ function drawAction() {
 function complete() {
   const a = action; if (!a) return; action = null; drawDynamic();
   tray = tray.filter(i => i !== a.item); renderTray(); renderChat();
-  administer(a.item.tr, a.where);
+  administer(a.item.tr, a.where, a.part);
 }
 
-async function administer(tr, where) {
+async function administer(tr, where, part = 'chest') {
   busy = true; document.body.classList.add('busy');
   say(`${tr.name} is in. Watching…`, true);
   record('treat', `Gave ${tr.name} (${tr.detail || tr.kind}) at ${where}`);
   const symptoms = [...body.problems].map(([s, p]) => ({ site: s, severity: +p.severity.toFixed(2), texts: p.texts }));
   let res = null;
   try {
-    const j = await post('/treat', { case: C, symptoms, vitals: vitalsNow(), history: treatHistory,
+    const j = await post('/treat', { case: C, symptoms, vitals: vitalsNow(), history: treatHistory, body_changes_so_far: mods.map(x => `${x.change} ${x.part}`),
       treatment: { name: tr.name, detail: tr.detail, kind: tr.kind, intended_site: tr.target_site, applied_to: where, meant_for: tr.treats } });
     if (j.ok) res = j.result;
   } catch { /* offline */ }
@@ -410,6 +414,10 @@ async function administer(tr, where) {
     body.add(s.site, s.text, Math.max(0.15, (s.severity || 0.5) * k));
     addVisuals(s, s.effects?.length ? s.effects : guessEffects(s.text, s.site));
   }
+  // physical changes: code decides what the act itself does (an amputation always shows), Claude adds consequences
+  const mine = inferChanges(tr, part);
+  const extra = (res.body_changes || []).filter(c => !(c.change === 'amputate' && mine.some(x => x.change === 'amputate')));
+  applyChanges(mods, [...mine, ...extra]);
   findings.push(...(res.new_findings || []).filter(f => SITES[f.site]));
   treatHistory.push({ name: tr.name, outcome: res.outcome, narration: res.narration, physiology: res.physiology });
   record(/worse|lethal/.test(res.outcome) ? 'cascade' : 'result', `${tr.name}: ${res.outcome.toUpperCase()}. ${res.narration} (${res.physiology})`);
@@ -420,9 +428,9 @@ async function administer(tr, where) {
 
 function offlineOutcome(tr) {
   const m = C.treatments.find(x => x.name.toLowerCase() === tr.name.toLowerCase());
-  if (m?.correct) return { outcome: 'cured', narration: 'Colour returns, the monitor settles.', physiology: m.why, resolve_sites: [], new_symptoms: [], new_findings: [] };
-  if (m) return { outcome: 'worse', narration: 'The monitor alarms. Something new is going wrong.', physiology: m.why, resolve_sites: [], new_symptoms: m.if_wrong_cascade.map(e => ({ ...e, effects: [] })), new_findings: [] };
-  return { outcome: 'no_change', narration: 'Nothing happens.', physiology: 'Offline: no simulation for this treatment.', resolve_sites: [], new_symptoms: [], new_findings: [] };
+  if (m?.correct) return { outcome: 'cured', narration: 'Colour returns, the monitor settles.', physiology: m.why, resolve_sites: [], new_symptoms: [], new_findings: [], body_changes: [] };
+  if (m) return { outcome: 'worse', narration: 'The monitor alarms. Something new is going wrong.', physiology: m.why, resolve_sites: [], new_symptoms: m.if_wrong_cascade.map(e => ({ ...e, effects: [] })), new_findings: [], body_changes: [] };
+  return { outcome: 'no_change', narration: 'Nothing happens.', physiology: 'Offline: no simulation for this treatment.', resolve_sites: [], new_symptoms: [], new_findings: [], body_changes: [] };
 }
 
 function showOutcome(tr, res) {

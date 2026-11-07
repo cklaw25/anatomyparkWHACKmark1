@@ -14,6 +14,7 @@ const OUT = {
   pancreas: [300, 385], kidneys: [368, 410], intestines: [300, 455], bladder: [300, 540], spinal_cord: [300, 300],
   blood: [176, 360], bone_marrow: [336, 650], joints: [190, 440], skin: [414, 360], left_leg: [266, 740], right_leg: [334, 740],
 };
+import { drawMods } from './mods.js';
 export const MOUTH = { x: 300, y: 114 };
 
 // a few deterministic random numbers so rashes don't flicker
@@ -120,6 +121,7 @@ export function drawPatient(effects, opts = {}) {
   const skinC = rgb(skin), shade = rgb(mix(skin, [90, 50, 40], 0.35)), lipC = g.cyanosis ? rgb(mix([170, 80, 80], [70, 80, 170], maxK(g.cyanosis))) : '#a85a52';
   const seize = maxK(g.seizure), tremor = maxK(g.tremor), breath = Math.max(maxK(g.fast_breathing), opts.breathFast || 0);
   const cls = seize > 0.25 ? 'seize' : tremor > 0.25 ? 'tremor' : '';
+  const md = drawMods(opts.mods);
   let fx = ''; effects.forEach((e, i) => { fx += local(e, i); });
   // whole-body extras
   if (g.sweating) { const k = maxK(g.sweating); for (let j = 0; j < 3 + Math.round(5 * k); j++) fx += `<path class="sweat" style="animation-delay:${j * 0.37}s" d="M${266 + j * 11} ${50 + (j % 3) * 8} q-3 6 0 8 q3 -2 0 -8z" fill="#bfe6ff" stroke="#6aa8d0" stroke-width=".8"/>`; }
@@ -136,10 +138,11 @@ export function drawPatient(effects, opts = {}) {
     <pattern id="gownDots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2" fill="#5f8fa0" opacity=".7"/><path d="M14 14 l4 4 m0 -4 l-4 4" stroke="#5f8fa0" stroke-width="1.2" opacity=".6"/></pattern>
     <radialGradient id="bruiseG"><stop offset="0" stop-color="#4a1850"/><stop offset=".55" stop-color="#7a3a6a"/><stop offset=".85" stop-color="#9a9a40" stop-opacity=".6"/><stop offset="1" stop-color="#9a9a40" stop-opacity="0"/></radialGradient>
     <radialGradient id="swellG"><stop offset="0" stop-color="${rgb(mix(skin, [240, 140, 120], 0.35))}"/><stop offset="1" stop-color="${skinC}"/></radialGradient>
+    ${md.mask}
     <radialGradient id="floorG"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   </defs>
   <ellipse cx="300" cy="852" rx="120" ry="16" fill="url(#floorG)"/>
-  <g id="patient" class="${cls}">
+  <g id="patient" class="${cls}"><g ${md.masked ? 'mask="url(#ampMask)"' : ''}>
     <g stroke="#3a2418" stroke-width="1.6">
       <path d="${P.legL}" fill="url(#skinG)"/><path d="${P.legR}" fill="url(#skinG)"/>
       <path d="M232 836 Q236 822 252 822 L276 824 Q284 836 278 848 L238 850 Q228 846 232 836Z" fill="#e8e8ee"/>
@@ -168,6 +171,8 @@ export function drawPatient(effects, opts = {}) {
     <path d="M262 64 C270 48 296 40 318 46" stroke="#4a3426" stroke-width="2" fill="none"/>
     ${face(g, skinC, lipC)}
     <g id="fx">${fx}</g>
+  </g>
+    <g id="mods">${md.over}</g>
   </g>`;
 }
 
