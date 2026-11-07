@@ -6,7 +6,8 @@ const API = import.meta.env.VITE_API || 'http://localhost:8010';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const LETTERS = 'ABCD';
-const START_MIN = 16 * 60 + 30, ONSET_AFTER = 12; // game clock starts 16:30, symptoms start ~12 s later
+const START_MIN = 16 * 60 + 30, ONSET_AFTER = 15;
+const EASY = true; // clue markers + hints // game clock starts 16:30, symptoms start ~12 s later
 
 // ---------------- state ----------------
 let C = null;                         // the hidden case (from Claude)
@@ -14,7 +15,20 @@ const body = new Body();
 let mode = 'circulatory', bot = { site: 'heart', x: SITES.heart.x, y: SITES.heart.y }, path = null, testing = null;
 let findings = [], treatments = [], given = [], evidence = [], cascades = [], log = [];
 let t = 0, started = false, over = false, onset = false, stagePending = false;
-let lastSay = -99, idleTimer = 0, flags = {};
+let lastSay = -99, idleTimer = 0, hintTimer = 0, hintLevel = 0, flags = {};
+
+// EASY mode: escalating hints from the Attending, built from the case itself
+function giveHint() {
+  const keys = findings.filter(f => f.key && !evidence.some(e => e.site === f.site && e.system === f.system));
+  const clueEvent = (C.day_events || []).find(e => e.clue);
+  const hints = [];
+  if (clueEvent) hints.push(`Hint: look at the day log. "${clueEvent.text}" at ${clueEvent.time} is not a coincidence.`);
+  if (keys[0]) hints.push(`Hint: try a ${keys[0].system} scan of the ${SITES[keys[0].site].label.toLowerCase()}.`);
+  if (keys[1]) hints.push(`Hint: the ${SITES[keys[1].site].label.toLowerCase()} has something to say on a ${keys[1].system} scan.`);
+  if (evidence.filter(e => e.key).length >= 2) hints.push('You have enough key clues. Read the evidence board and treat the ROOT cause, not the symptoms.');
+  if (!hints.length) return;
+  say(hints[Math.min(hintLevel, hints.length - 1)], true); hintLevel++;
+}
 
 // ---------------- voice + the Attending (live personality) ----------------
 const synth = window.speechSynthesis; let voice = null;
@@ -65,9 +79,14 @@ function setMode(m) {
 
 function drawStatic() {
   const md = MODES.find(x => x.id === mode);
-  $('body').innerHTML = `${silhouette()}<g id="lay">${layer(mode)}</g><g id="dyn"></g>
+  // teammate art: if frontend/public/art/body_<mode>.png exists (600x880), it replaces the built-in drawing
+  $('body').innerHTML = `${silhouette()}<g id="lay">${layer(mode)}</g>
+    <image href="/art/body_${mode}.png" x="0" y="0" width="600" height="880" preserveAspectRatio="xMidYMid meet"
+      onload="document.getElementById('silhouette').style.display='none';document.getElementById('lay').style.display='none'" onerror="this.remove()"/>
+    <g id="dyn"></g>
     <rect class="scanline" x="0" y="0" width="600" height="6" fill="${md.color}" opacity=".8"/>
-    <circle id="bot-glow" r="20" fill="#5adcff" opacity=".35"/><circle id="bot" r="9" fill="#5adcff" stroke="#fff" stroke-width="2"/>`;
+    <circle id="bot-glow" r="20" fill="#5adcff" opacity=".35"/><circle id="bot" r="9" fill="#5adcff" stroke="#fff" stroke-width="2"/>
+    <image id="bot-art" href="/art/nanobot.png" width="44" height="44" onload="document.getElementById('bot').style.display='none'" onerror="this.remove()"/>`;
   drawDynamic();
 }
 
@@ -77,6 +96,8 @@ function drawDynamic() {
   for (const [id, s] of Object.entries(SITES)) {
     const p = body.problems.get(id), bright = inMode.includes(id);
     const tested = evidence.some(e => e.site === id && e.system === mode);
+    const clueHere = EASY && onset && findings.some(f => f.site === id && f.system === mode && !evidence.some(e => e.site === id && e.system === mode));
+    if (clueHere) h += `<text x="${s.x - 6}" y="${s.y + 5}" style="font:bold 15px Consolas;fill:#ffd24a;paint-order:stroke;stroke:#000;stroke-width:3px">?</text>`;
     if (p && p.severity > 0.02 && onset) h += `<circle class="glow" cx="${s.x}" cy="${s.y}" r="${16 + 30 * p.severity}" fill="#ff3030" opacity=".6"/>`;
     h += `<g class="site" data-site="${id}"><circle cx="${s.x}" cy="${s.y}" r="18" fill="transparent"/>
       <circle class="ring" cx="${s.x}" cy="${s.y}" r="${bright ? 11 : 7}" stroke="${tested ? '#5ae68c' : bright ? md.color : '#506070'}"/>
@@ -176,7 +197,7 @@ async function treat(i) {
     return;
   }
   const effects = (tr.if_wrong_cascade || []).filter(e => SITES[e.site]);
-  effects.forEach(e => body.add(e.site, e.text, Math.max(0.25, e.severity * 0.8)));
+  effects.forEach(e => body.add(e.site, e.text, Math.max(0.15, e.severity * 0.45)));
   cascades.push({ treatment: tr.name, why: tr.why, effects }); renderCascades();
   record('cascade', `${tr.why} → ${effects.map(e => SITES[e.site].label + ': ' + e.text).join('; ')}`);
   stagePending = true; renderTreatments();
@@ -234,7 +255,7 @@ function frame(now) {
     t += dt; idleTimer += dt;
     if (!onset && t > ONSET_AFTER) {
       onset = true; C._onsetClock = clock();
-      for (const s of C.initial_symptoms) if (SITES[s.site]) body.add(s.site, s.text, s.severity * 0.6, s.site === C.root_site);
+      for (const s of C.initial_symptoms) if (SITES[s.site]) body.add(s.site, s.text, s.severity * 0.35, s.site === C.root_site);
       if (!body.problems.has(C.root_site)) body.add(C.root_site, '', 0.25, true);
       $('sev').textContent = 'SEV-1 INCIDENT · ROOT CAUSE: UNKNOWN'; $('sev').classList.add('on');
       say(`Here we go. ${C.patient.name} just reported: ${C.initial_symptoms[0].text.toLowerCase()}. You're on call.`, true);
@@ -251,7 +272,9 @@ function frame(now) {
       react('hr', v.hr > 130, `Heart rate ${Math.round(v.hr)}. That is not excitement.`);
       react('bp', v.sys < 90, `Pressure ${Math.round(v.sys)} over ${Math.round(v.dia)}. He is crashing.`);
       react('temp', v.temp > 38.8, `Temperature ${v.temp.toFixed(1)}. Something is burning in there.`);
-      if (idleTimer > 18) { idleTimer = 0; say(pick(['Are you waiting for him to get better on his own?', 'Tick tock. Bodies do not pause.', `Look at the day log. What did ${C.patient.name} do today?`])); }
+      hintTimer += dt;
+      if (EASY && hintTimer > 45) { hintTimer = 0; giveHint(); }
+      if (idleTimer > 25) { idleTimer = 0; say(pick(['Are you waiting for him to get better on his own?', 'Tick tock. Bodies do not pause.', `Look at the day log. What did ${C.patient.name} do today?`])); }
     }
     // movement through the bloodstream
     if (path) {
@@ -265,6 +288,7 @@ function frame(now) {
     $('patient-line').textContent = `PATIENT: ${C.patient.name.toUpperCase()}, ${C.patient.age} · CLOCK ${clock()} · ${body.status()}`;
     const b = $('bot'), g = $('bot-glow');
     if (b) { b.setAttribute('cx', bot.x); b.setAttribute('cy', bot.y); g.setAttribute('cx', bot.x); g.setAttribute('cy', bot.y); }
+    const ba = $('bot-art'); if (ba) { ba.setAttribute('x', bot.x - 22); ba.setAttribute('y', bot.y - 22); }
     drawEcg(dt);
   }
   requestAnimationFrame(frame);

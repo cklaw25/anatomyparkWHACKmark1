@@ -36,7 +36,8 @@ export class Body {
     p.severity = Math.min(1, Math.max(p.severity, severity));
     if (text && !p.texts.includes(text)) p.texts.push(text);
     p.root = p.root || root;
-    p.rate = root ? 0.016 : 0.010;            // severity per real second while untreated
+    // EASY tuning: untreated, the root cause takes ~5 min to become critical, side problems ~7 min
+    p.rate = root ? 0.0032 : 0.0022;
     this.problems.set(site, p);
   }
 
@@ -64,9 +65,9 @@ export class Body {
     this.v.spo2 += (target.spo2 + n(0.6) - this.v.spo2) * s;
     this.v.temp += (target.temp - this.v.temp) * s * 0.5;
     this.v.rr += (target.rr + n(1) - this.v.rr) * s;
-    const crit = this.v.spo2 < 82 || this.v.sys < 75 || this.v.hr > 168 || this.v.temp > 41 || this.totalSeverity() > 4.2;
+    const crit = this.v.spo2 < 80 || this.v.sys < 72 || this.v.hr > 172 || this.v.temp > 41.2 || this.totalSeverity() > 4.8;
     this.critTime = crit ? this.critTime + dt : Math.max(0, this.critTime - dt);
-    return this.critTime > 6; // true = the patient codes (game over)
+    return this.critTime > 20; // true = the patient codes (game over): 20 s of critical vitals
   }
 
   status() {
