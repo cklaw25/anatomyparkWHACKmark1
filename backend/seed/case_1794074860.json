@@ -1,0 +1,200 @@
+{
+ "root_cause": "Meningococcal meningitis with septicemia (Neisseria meningitidis)",
+ "root_site": "brain",
+ "patient": {
+  "name": "Maya Okafor",
+  "age": 19,
+  "background": "First-year student, new dorm, skipped campus meningitis vaccine. Otherwise healthy."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Woke after dorm party",
+   "clue": false
+  },
+  {
+   "time": "09:00",
+   "text": "Roommate shared her vape",
+   "clue": true
+  },
+  {
+   "time": "11:15",
+   "text": "Skipped lecture, legs aching",
+   "clue": false
+  },
+  {
+   "time": "13:00",
+   "text": "Took ibuprofen, felt shivery",
+   "clue": false
+  },
+  {
+   "time": "15:30",
+   "text": "Closed curtains, light hurt",
+   "clue": true
+  },
+  {
+   "time": "16:45",
+   "text": "Friend noticed spots on shins",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "left_leg",
+   "text": "Deep aching leg pain, cold feet",
+   "severity": 0.5
+  },
+  {
+   "site": "stomach",
+   "text": "Nausea and vomiting",
+   "severity": 0.4
+  },
+  {
+   "site": "brain",
+   "text": "Headache, hates bright light",
+   "severity": 0.6
+  }
+ ],
+ "findings": [
+  {
+   "site": "spinal_cord",
+   "system": "nervous",
+   "result": "Cloudy spinal fluid, many white cells: bacterial meningitis",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Bean-shaped paired bacteria: gram-negative diplococci",
+   "key": true
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Purple spots don't fade when pressed: petechiae",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Platelets dropping, clotting factors used up: early DIC",
+   "key": true
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Mild swelling of brain linings: meningeal inflammation",
+   "key": false
+  },
+  {
+   "site": "left_leg",
+   "system": "skeletal",
+   "result": "Bones and muscle normal; pain from poor perfusion",
+   "key": false
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Mild lining irritation from alcohol: gastritis",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, fast breathing: tachypnea",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Slightly reduced filtering: early acute kidney injury",
+   "key": false
+  },
+  {
+   "site": "joints",
+   "system": "skeletal",
+   "result": "No fluid or swelling: normal joints",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "IV ceftriaxone, immediately",
+   "correct": true,
+   "why": "A third-generation cephalosporin crosses inflamed meninges and quickly kills Neisseria; hours matter.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that, the antibiotic for the bacteria. Revolutionary."
+  },
+  {
+   "name": "Acyclovir (antiviral)",
+   "correct": false,
+   "why": "Treats herpes encephalitis but does nothing to bacteria, so sepsis keeps progressing.",
+   "if_wrong_cascade": [
+    {
+     "site": "skin",
+     "text": "Spots merge into purpura fulminans",
+     "severity": 0.8
+    },
+    {
+     "site": "kidneys",
+     "text": "Adrenal bleed, blood pressure crashes",
+     "severity": 0.9
+    },
+    {
+     "site": "heart",
+     "text": "Septic shock, racing weak pulse",
+     "severity": 0.8
+    }
+   ],
+   "attending_line": "Great, you've cured a virus she doesn't have."
+  },
+  {
+   "name": "Heparin for leg clot",
+   "correct": false,
+   "why": "Leg pain is sepsis-related poor perfusion, not a DVT; anticoagulating someone in DIC with low platelets triggers bleeding.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Bleeding into brain, sudden confusion",
+     "severity": 0.9
+    },
+    {
+     "site": "stomach",
+     "text": "Vomiting blood from gastritis",
+     "severity": 0.7
+    },
+    {
+     "site": "blood",
+     "text": "Platelets bottom out",
+     "severity": 0.8
+    }
+   ],
+   "attending_line": "She's already bleeding into her skin. Let's help it along."
+  },
+  {
+   "name": "Fluids and antiemetic only",
+   "correct": false,
+   "why": "Treating nausea as gastroenteritis delays antibiotics while bacteria multiply in blood and meninges.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Seizures and dropping consciousness",
+     "severity": 0.9
+    },
+    {
+     "site": "left_leg",
+     "text": "Toes turning black, gangrene",
+     "severity": 0.7
+    },
+    {
+     "site": "lungs",
+     "text": "Fluid-filled lungs, struggling to breathe",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "Hangover protocol for a girl with a rash. Bold."
+  }
+ ],
+ "post_mortem": "Maya picked up Neisseria meningitidis from her roommate's vape and the crowded dorm, and it spread from her throat into her blood and meninges. The leg pain and cold feet came first and pointed away from the brain, but light sensitivity plus non-blanching spots in an unvaccinated student meant ceftriaxone right away.",
+ "_source": "claude-opus-5-5"
+}

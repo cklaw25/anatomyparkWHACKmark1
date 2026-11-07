@@ -1,0 +1,200 @@
+{
+ "root_cause": "Meningococcal sepsis (Neisseria meningitidis bloodstream infection)",
+ "root_site": "blood",
+ "patient": {
+  "name": "Jonah Reyes",
+  "age": 19,
+  "background": "First-year student, lives in crowded dorm, skipped meningitis booster vaccine."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Woke with sore throat",
+   "clue": false
+  },
+  {
+   "time": "09:00",
+   "text": "Shared vape at dorm",
+   "clue": true
+  },
+  {
+   "time": "11:15",
+   "text": "Skipped lecture, felt feverish",
+   "clue": false
+  },
+  {
+   "time": "13:00",
+   "text": "Legs ached on stairs",
+   "clue": true
+  },
+  {
+   "time": "15:00",
+   "text": "Vomited after lunch",
+   "clue": false
+  },
+  {
+   "time": "16:40",
+   "text": "Hands and feet ice-cold",
+   "clue": true
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "left_leg",
+   "text": "Deep aching pain in both legs",
+   "severity": 0.6
+  },
+  {
+   "site": "stomach",
+   "text": "Nausea and vomiting",
+   "severity": 0.5
+  },
+  {
+   "site": "blood",
+   "text": "High fever, shivering",
+   "severity": 0.7
+  }
+ ],
+ "findings": [
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Tiny purple spots that don't fade when pressed (petechiae)",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Gram-negative diplococci in blood culture (bacteremia)",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Low platelets, clotting factors used up (early DIC)",
+   "key": true
+  },
+  {
+   "site": "left_leg",
+   "system": "circulatory",
+   "result": "Cold limbs, slow capillary refill, no clot (poor perfusion)",
+   "key": true
+  },
+  {
+   "site": "left_leg",
+   "system": "skeletal",
+   "result": "Bones and muscles intact, no fracture (normal X-ray)",
+   "key": false
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Mild stomach irritation, no blockage (gastritis)",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Mild neck stiffness, no abscess yet (early meningism)",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Fast breathing, lungs clear (tachypnea)",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Producing less urine, creatinine creeping up (pre-renal injury)",
+   "key": false
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Racing heart, blood pressure starting to drop (tachycardia)",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "IV ceftriaxone plus fluids",
+   "correct": true,
+   "why": "A third-generation cephalosporin rapidly kills Neisseria in the blood, and fluids support failing circulation.",
+   "if_wrong_cascade": [],
+   "attending_line": "Antibiotics for a bacterial infection. Revolutionary. Someone call the Nobel committee."
+  },
+  {
+   "name": "Heparin for suspected leg clot",
+   "correct": false,
+   "why": "No DVT exists; thinning blood when DIC has already used up clotting factors triggers bleeding.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Sudden headache, bleeding in brain",
+     "severity": 0.8
+    },
+    {
+     "site": "stomach",
+     "text": "Vomiting blood",
+     "severity": 0.7
+    },
+    {
+     "site": "skin",
+     "text": "Purple patches spreading fast",
+     "severity": 0.8
+    }
+   ],
+   "attending_line": "Great, you treated a clot that doesn't exist and made him bleed everywhere."
+  },
+  {
+   "name": "Ibuprofen and rest (flu)",
+   "correct": false,
+   "why": "It masks fever while bacteria multiply, and NSAIDs harm kidneys and stomach in shock.",
+   "if_wrong_cascade": [
+    {
+     "site": "kidneys",
+     "text": "Urine output stops",
+     "severity": 0.8
+    },
+    {
+     "site": "heart",
+     "text": "Blood pressure crashes, septic shock",
+     "severity": 0.9
+    },
+    {
+     "site": "stomach",
+     "text": "Burning pain, stomach ulcer bleed",
+     "severity": 0.5
+    }
+   ],
+   "attending_line": "Sure, it's the flu. Flu famously makes non-blanching rashes. Wait, no."
+  },
+  {
+   "name": "IV acyclovir (antiviral)",
+   "correct": false,
+   "why": "Antivirals do nothing to bacteria, delay real treatment, and acyclovir crystals can injure dehydrated kidneys.",
+   "if_wrong_cascade": [
+    {
+     "site": "kidneys",
+     "text": "Crystals clog kidneys, rising creatinine",
+     "severity": 0.6
+    },
+    {
+     "site": "brain",
+     "text": "Confusion, stiff neck worsening",
+     "severity": 0.8
+    },
+    {
+     "site": "left_leg",
+     "text": "Toes turning dark, tissue dying",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "Lovely antiviral. The bacteria thank you for the extra six hours."
+  }
+ ],
+ "post_mortem": "Jonah caught Neisseria meningitidis from a shared vape in his crowded dorm, and it spread through his bloodstream, causing septic shock and early DIC. Leg pain, cold hands and feet, and a rash that didn't fade when pressed in an unvaccinated student should have meant IV antibiotics right away.",
+ "_source": "claude-opus-5-5"
+}

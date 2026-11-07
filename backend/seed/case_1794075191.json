@@ -1,0 +1,200 @@
+{
+ "root_cause": "Thyroid storm from Graves' disease flare (stopped medication)",
+ "root_site": "thyroid",
+ "patient": {
+  "name": "Maya Okafor",
+  "age": 21,
+  "background": "Biology student, Graves' disease diagnosed last year, exam season stress"
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Skipped pills, ran out",
+   "clue": true
+  },
+  {
+   "time": "09:00",
+   "text": "Three energy drinks, exam",
+   "clue": false
+  },
+  {
+   "time": "11:15",
+   "text": "Sweating in cold library",
+   "clue": true
+  },
+  {
+   "time": "13:00",
+   "text": "Barely touched lunch",
+   "clue": false
+  },
+  {
+   "time": "15:00",
+   "text": "Took aspirin for fever",
+   "clue": false
+  },
+  {
+   "time": "16:40",
+   "text": "Collapsed, confused, racing heart",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "heart",
+   "text": "Racing, irregular heartbeat",
+   "severity": 0.8
+  },
+  {
+   "site": "brain",
+   "text": "Agitated, confused, talking fast",
+   "severity": 0.6
+  },
+  {
+   "site": "intestines",
+   "text": "Diarrhea and vomiting",
+   "severity": 0.4
+  }
+ ],
+ "findings": [
+  {
+   "site": "thyroid",
+   "system": "organs",
+   "result": "Enlarged, hot gland with heavy blood flow: diffuse goiter",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Thyroid hormone sky-high, TSH near zero: hyperthyroxinemia",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "TSH-receptor antibodies strongly positive: TRAb",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Fast chaotic rhythm, 160 bpm: atrial fibrillation",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Hot, wet skin, fever 40.2\u00b0C: hyperthermia",
+   "key": true
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, no infection: normal chest",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "No bleed or stroke on scan: normal CT",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "High caffeine level, mildly raised: caffeine intake",
+   "key": false
+  },
+  {
+   "site": "liver",
+   "system": "digestive",
+   "result": "Liver enzymes mildly raised: hepatic stress",
+   "key": false
+  },
+  {
+   "site": "bladder",
+   "system": "organs",
+   "result": "Urine clean, no bacteria: normal urinalysis",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Propranolol, PTU, iodine, steroids",
+   "correct": true,
+   "why": "Beta-blocker calms the heart, PTU blocks new hormone, iodine halts release later, steroids block T4-to-T3 conversion.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that, you treated the gland instead of its fan club."
+  },
+  {
+   "name": "Broad antibiotics + fluid boluses",
+   "correct": false,
+   "why": "No infection exists; big fluid loads strain a heart already failing from thyroid overdrive.",
+   "if_wrong_cascade": [
+    {
+     "site": "lungs",
+     "text": "Fluid in lungs, gasping",
+     "severity": 0.7
+    },
+    {
+     "site": "heart",
+     "text": "High-output heart failure",
+     "severity": 0.8
+    },
+    {
+     "site": "intestines",
+     "text": "Antibiotic diarrhea worsens",
+     "severity": 0.3
+    }
+   ],
+   "attending_line": "Sepsis without bugs. Bold. Her lungs are now a swimming pool."
+  },
+  {
+   "name": "More aspirin for fever",
+   "correct": false,
+   "why": "Aspirin knocks thyroid hormone off its carrier protein, raising free hormone and worsening the storm.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Heart rate climbs past 180",
+     "severity": 0.9
+    },
+    {
+     "site": "stomach",
+     "text": "Bleeding stomach lining",
+     "severity": 0.5
+    },
+    {
+     "site": "brain",
+     "text": "Delirium deepens, seizure risk",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "You fed the fire a fresh log and called it a fire blanket."
+  },
+  {
+   "name": "Sedate for caffeine overdose",
+   "correct": false,
+   "why": "Caffeine is a red herring; benzodiazepines blunt breathing while hormone excess keeps driving the heart.",
+   "if_wrong_cascade": [
+    {
+     "site": "lungs",
+     "text": "Slow shallow breathing",
+     "severity": 0.6
+    },
+    {
+     "site": "heart",
+     "text": "Fibrillation continues unchecked",
+     "severity": 0.8
+    },
+    {
+     "site": "liver",
+     "text": "Liver injury progresses",
+     "severity": 0.4
+    }
+   ],
+   "attending_line": "Three energy drinks, yes. Also a goiter the size of a lemon."
+  }
+ ],
+ "post_mortem": "Maya ran out of her Graves' medication during exams, and the untreated autoimmune thyroid flared into thyroid storm, made worse by the aspirin she took. The clues were the skipped pills, sweating in a cold room, and a hot, enlarged thyroid. The energy drinks only explained a bit of it.",
+ "_source": "claude-opus-5-5"
+}

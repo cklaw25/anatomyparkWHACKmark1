@@ -1,0 +1,185 @@
+{
+ "root_cause": "Cerebral venous sinus thrombosis (clot in brain drainage vein), from estrogen pill plus dehydration",
+ "root_site": "brain",
+ "patient": {
+  "name": "Maya Lindqvist",
+  "age": 21,
+  "background": "Biology student, started combined contraceptive pill 6 weeks ago; mother had 'leg clot'."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Skipped water, hungover",
+   "clue": true
+  },
+  {
+   "time": "09:00",
+   "text": "Took ibuprofen for headache",
+   "clue": false
+  },
+  {
+   "time": "11:15",
+   "text": "Vomited in lecture hall",
+   "clue": false
+  },
+  {
+   "time": "13:00",
+   "text": "Took daily birth control pill",
+   "clue": true
+  },
+  {
+   "time": "14:40",
+   "text": "Headache worse when lying",
+   "clue": false
+  },
+  {
+   "time": "16:20",
+   "text": "Dropped coffee, right hand weak",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "brain",
+   "text": "Worsening headache for three days",
+   "severity": 0.6
+  },
+  {
+   "site": "stomach",
+   "text": "Repeated vomiting, can't keep water",
+   "severity": 0.5
+  },
+  {
+   "site": "skin",
+   "text": "Pale, clammy, dry lips",
+   "severity": 0.3
+  }
+ ],
+ "findings": [
+  {
+   "site": "brain",
+   "system": "circulatory",
+   "result": "Left drainage vein blocked, no flow: sinus thrombosis",
+   "key": true
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Swollen optic discs from high skull pressure: papilledema",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Clot breakdown marker very high: elevated D-dimer",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "organs",
+   "result": "Inherited clotting tendency gene present: Factor V Leiden",
+   "key": true
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Mild lining irritation from ibuprofen: gastritis",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Concentrated urine, mild dehydration: raised urea",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, no clots: normal perfusion",
+   "key": false
+  },
+  {
+   "site": "left_leg",
+   "system": "circulatory",
+   "result": "Deep veins compress normally, no DVT",
+   "key": false
+  },
+  {
+   "site": "spinal_cord",
+   "system": "nervous",
+   "result": "Spinal fluid clear, no infection: normal CSF",
+   "key": false
+  },
+  {
+   "site": "liver",
+   "system": "digestive",
+   "result": "Slightly raised enzymes from alcohol: mild transaminitis",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Heparin (blood thinner) + fluids",
+   "correct": true,
+   "why": "Anticoagulation stops the venous clot growing and lets the sinus reopen, even if small bleeds exist; stop the pill.",
+   "if_wrong_cascade": [],
+   "attending_line": "A blood thinner for a headache. Congratulations, you read the venogram."
+  },
+  {
+   "name": "Sumatriptan (migraine drug)",
+   "correct": false,
+   "why": "Triptans constrict blood vessels, worsening flow in an already congested brain and promoting venous infarction.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Seizure, right side twitching",
+     "severity": 0.8
+    },
+    {
+     "site": "heart",
+     "text": "Chest tightness, vessel spasm",
+     "severity": 0.4
+    }
+   ],
+   "attending_line": "Migraine in a 21-year-old with a weak hand. Bold. Wrong, but bold."
+  },
+  {
+   "name": "Dexamethasone (steroid)",
+   "correct": false,
+   "why": "Steroids don't help sinus thrombosis and increase clotting risk, plus raise blood sugar.",
+   "if_wrong_cascade": [
+    {
+     "site": "blood",
+     "text": "High blood sugar, more clotting",
+     "severity": 0.5
+    },
+    {
+     "site": "brain",
+     "text": "Confusion, venous bleed expanding",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "Steroids: when you don't know what it is, make it worse anti-inflammatorily."
+  },
+  {
+   "name": "Morphine + anti-nausea drip",
+   "correct": false,
+   "why": "Masks pain while the clot grows; opioid sedation raises CO2, widening brain vessels and skull pressure.",
+   "if_wrong_cascade": [
+    {
+     "site": "lungs",
+     "text": "Slow shallow breathing",
+     "severity": 0.6
+    },
+    {
+     "site": "brain",
+     "text": "Drowsy, pupils unequal, rising pressure",
+     "severity": 0.9
+    }
+   ],
+   "attending_line": "She's comfortable now. So is anyone in a coma."
+  }
+ ],
+ "post_mortem": "Estrogen from her new pill, an inherited Factor V Leiden mutation, and hangover dehydration caused a clot in a brain drainage vein, raising skull pressure. The clues were a headache worse lying down, a new pill, a family clotting history, and a weak hand, which together point away from migraine.",
+ "_source": "claude-opus-5-5"
+}

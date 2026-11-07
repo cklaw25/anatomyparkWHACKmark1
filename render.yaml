@@ -1,0 +1,25 @@
+# Render blueprint for the ANATOMY PARK backend (FastAPI). New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: anatomypark-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false            # paste it in the Render dashboard, never in git
+      - key: PUBLIC
+        value: "1"             # serve only the pre-made case pool (no Opus case writing)
+      - key: ALLOWED_ORIGIN_REGEX
+        value: "https://.*\.vercel\.app"
+      - key: ALLOWED_ORIGINS
+        value: "http://localhost:5173"
+      - key: IP_LIMIT
+        value: "60"            # AI calls per visitor per 10 min
+      - key: DAILY_CAP
+        value: "2000"          # AI calls per day for the whole site
+      - key: PYTHON_VERSION
+        value: "3.12.7"

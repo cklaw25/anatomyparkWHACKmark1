@@ -1,0 +1,200 @@
+{
+ "root_cause": "Splenic rupture from infectious mononucleosis (mono) after a tackle",
+ "root_site": "blood",
+ "patient": {
+  "name": "Jonah Reyes",
+  "age": 20,
+  "background": "University rugby player, recent 'bad flu' with sore throat, otherwise healthy"
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Skipped breakfast, still feeling tired",
+   "clue": false
+  },
+  {
+   "time": "09:00",
+   "text": "Gargled for lingering sore throat",
+   "clue": true
+  },
+  {
+   "time": "11:00",
+   "text": "Lecture, drank energy drink",
+   "clue": false
+  },
+  {
+   "time": "14:00",
+   "text": "Rugby practice, hard tackle",
+   "clue": true
+  },
+  {
+   "time": "15:30",
+   "text": "Took ibuprofen for shoulder",
+   "clue": false
+  },
+  {
+   "time": "16:45",
+   "text": "Fainted in locker room shower",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "joints",
+   "text": "Sharp left shoulder tip pain",
+   "severity": 0.6
+  },
+  {
+   "site": "heart",
+   "text": "Racing pulse, dizzy when standing",
+   "severity": 0.7
+  },
+  {
+   "site": "intestines",
+   "text": "Vague tender upper-left belly",
+   "severity": 0.4
+  }
+ ],
+ "findings": [
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Free blood pooling in belly (hemoperitoneum)",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "organs",
+   "result": "Atypical lymphocytes, positive mono spot test (EBV)",
+   "key": true
+  },
+  {
+   "site": "liver",
+   "system": "organs",
+   "result": "Mildly raised liver enzymes (hepatitis), liver mildly enlarged",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Fast heart rate, low pressure (hypovolemic shock)",
+   "key": true
+  },
+  {
+   "site": "joints",
+   "system": "skeletal",
+   "result": "Left shoulder joint and collarbone normal, no fracture",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Lungs clear, no collapse (no pneumothorax)",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "No head bleed; fainting from low blood flow (syncope)",
+   "key": false
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Mild irritation from ibuprofen (gastritis), no perforation",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Left kidney intact, small urine output (oliguria)",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Pale, clammy skin; faint rash (exanthem)",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Fluids, blood, emergency splenectomy",
+   "correct": true,
+   "why": "Replacing lost blood and removing or repairing the torn spleen stops the bleeding at its source.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that, someone connected sore throat to shoulder pain. Gold star."
+  },
+  {
+   "name": "Amoxicillin for strep throat",
+   "correct": false,
+   "why": "Mono is viral, amoxicillin causes a classic rash in EBV, and the spleen keeps bleeding.",
+   "if_wrong_cascade": [
+    {
+     "site": "skin",
+     "text": "Widespread itchy red rash",
+     "severity": 0.5
+    },
+    {
+     "site": "heart",
+     "text": "Blood pressure crashing further",
+     "severity": 0.8
+    },
+    {
+     "site": "kidneys",
+     "text": "Kidneys shutting down from low flow",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "Great, you treated a virus with penicillin while he bleeds out. Bold."
+  },
+  {
+   "name": "Shoulder sling and more NSAIDs",
+   "correct": false,
+   "why": "Shoulder pain is referred from blood irritating the diaphragm, and NSAIDs impair platelets so the bleeding gets worse.",
+   "if_wrong_cascade": [
+    {
+     "site": "blood",
+     "text": "Bleeding speeds up, platelets impaired",
+     "severity": 0.8
+    },
+    {
+     "site": "stomach",
+     "text": "Stomach lining bleeds, dark vomit",
+     "severity": 0.5
+    },
+    {
+     "site": "brain",
+     "text": "Confused, barely conscious",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "The shoulder's fine. The blood filling his belly isn't."
+  },
+  {
+   "name": "Adrenaline for anaphylaxis",
+   "correct": false,
+   "why": "He's in shock from blood loss, not allergy; adrenaline squeezes vessels without replacing volume and strains the heart.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Dangerous irregular heartbeat",
+     "severity": 0.8
+    },
+    {
+     "site": "intestines",
+     "text": "Gut starved of blood flow",
+     "severity": 0.6
+    },
+    {
+     "site": "kidneys",
+     "text": "Urine output stops",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "Wrong kind of shock. He's not allergic, he's empty."
+  }
+ ],
+ "post_mortem": "Jonah's spleen was swollen and fragile from mono, and a rugby tackle tore it open, so he bled slowly into his belly until he went into shock. A good doctor would have linked the lingering sore throat and the hit to the body with left shoulder-tip pain (Kehr's sign) and checked for bleeding in the abdomen.",
+ "_source": "claude-opus-5-5"
+}

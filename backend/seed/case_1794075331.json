@@ -1,0 +1,190 @@
+{
+ "root_cause": "Carbon monoxide poisoning from a faulty gas heater",
+ "root_site": "blood",
+ "patient": {
+  "name": "Maya Okafor",
+  "age": 21,
+  "background": "Engineering student, history of migraines, lives in an old basement flat"
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Woke with pounding headache",
+   "clue": false
+  },
+  {
+   "time": "08:15",
+   "text": "Flatmate also felt sick",
+   "clue": true
+  },
+  {
+   "time": "10:00",
+   "text": "Headache eased at library",
+   "clue": true
+  },
+  {
+   "time": "12:30",
+   "text": "Skipped lunch, felt nauseous",
+   "clue": false
+  },
+  {
+   "time": "15:00",
+   "text": "Back home, heater on",
+   "clue": true
+  },
+  {
+   "time": "16:40",
+   "text": "Confused, collapsed on stairs",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "brain",
+   "text": "Throbbing headache and confusion",
+   "severity": 0.7
+  },
+  {
+   "site": "stomach",
+   "text": "Nausea and vomiting",
+   "severity": 0.5
+  },
+  {
+   "site": "heart",
+   "text": "Racing heartbeat, chest tightness",
+   "severity": 0.4
+  }
+ ],
+ "findings": [
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Carboxyhemoglobin 28%: blood carrying CO, not oxygen",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "respiratory",
+   "result": "Finger oxygen reading falsely normal at 99% (pulse oximetry)",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "organs",
+   "result": "Mild heart muscle strain, raised troponin",
+   "key": true
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Swelling risk in deep brain areas (globus pallidus)",
+   "key": true
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Empty stomach, no ulcer or bleeding (gastritis absent)",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, no pneumonia (normal X-ray)",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "No bleed or tumor on scan (CT normal)",
+   "key": false
+  },
+  {
+   "site": "liver",
+   "system": "organs",
+   "result": "Liver enzymes normal, no paracetamol toxicity",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "circulatory",
+   "result": "Flushed pink cheeks despite illness (cherry-red tint)",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Lactate raised: cells starved of oxygen (acidosis)",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "100% oxygen, consider hyperbaric",
+   "correct": true,
+   "why": "High-flow oxygen pushes CO off hemoglobin, cutting its half-life from ~5 hours to ~1 hour.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that, you treated the patient instead of her migraine diary."
+  },
+  {
+   "name": "Sumatriptan for migraine",
+   "correct": false,
+   "why": "Triptans constrict blood vessels, further starving an oxygen-deprived heart and brain.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Crushing chest pain, coronary spasm",
+     "severity": 0.8
+    },
+    {
+     "site": "brain",
+     "text": "Worsening confusion, slurred speech",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "Great, you squeezed her arteries shut. Her heart sends its regards."
+  },
+  {
+   "name": "Ondansetron and send home",
+   "correct": false,
+   "why": "Stopping the nausea hides the warning sign and sends her back into the CO-filled flat.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Seizure, then unresponsive",
+     "severity": 0.9
+    },
+    {
+     "site": "heart",
+     "text": "Irregular heartbeat, arrhythmia",
+     "severity": 0.7
+    },
+    {
+     "site": "left_leg",
+     "text": "Muscle breakdown, dark urine (rhabdomyolysis)",
+     "severity": 0.5
+    }
+   ],
+   "attending_line": "Nausea fixed. Also, she's back in the gas chamber. Nice discharge."
+  },
+  {
+   "name": "Sedate with benzodiazepine",
+   "correct": false,
+   "why": "Sedation slows her breathing, so she clears CO even slower and drops her oxygen further.",
+   "if_wrong_cascade": [
+    {
+     "site": "lungs",
+     "text": "Shallow, slow breathing",
+     "severity": 0.8
+    },
+    {
+     "site": "blood",
+     "text": "Rising acid levels, CO stays bound",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "She's calm now. Mostly because she's barely breathing."
+  }
+ ],
+ "post_mortem": "Maya's old gas heater was leaking carbon monoxide, which grabs hemoglobin about 200 times more strongly than oxygen and quietly suffocates the brain and heart. The giveaways were a flatmate with the same symptoms, a headache that got better away from home, and a normal oxygen reading that can't tell CO apart from oxygen.",
+ "_source": "claude-opus-5-5"
+}

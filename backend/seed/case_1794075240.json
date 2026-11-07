@@ -1,0 +1,185 @@
+{
+ "root_cause": "Thyroid storm from untreated Graves' disease, triggered by stopping meds plus pseudoephedrine",
+ "root_site": "thyroid",
+ "patient": {
+  "name": "Maya Okafor",
+  "age": 21,
+  "background": "Biology student, Graves' disease diagnosed last year, stopped methimazole months ago."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Skipped breakfast, felt jittery",
+   "clue": false
+  },
+  {
+   "time": "09:00",
+   "text": "Took cold-and-flu decongestant pills",
+   "clue": true
+  },
+  {
+   "time": "11:15",
+   "text": "Sweating in air-conditioned exam",
+   "clue": true
+  },
+  {
+   "time": "13:00",
+   "text": "Ate cafeteria chicken wrap",
+   "clue": false
+  },
+  {
+   "time": "15:30",
+   "text": "Ran to catch bus",
+   "clue": false
+  },
+  {
+   "time": "16:45",
+   "text": "Collapsed, confused, burning hot",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "heart",
+   "text": "Racing, irregular heartbeat",
+   "severity": 0.8
+  },
+  {
+   "site": "intestines",
+   "text": "Vomiting and watery diarrhea",
+   "severity": 0.6
+  },
+  {
+   "site": "brain",
+   "text": "Agitated, confused, fever 40.5\u00b0C",
+   "severity": 0.7
+  }
+ ],
+ "findings": [
+  {
+   "site": "thyroid",
+   "system": "organs",
+   "result": "Enlarged, hyperactive gland; very high free T4",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "TSH undetectable, thyroid-stimulating antibodies (TRAb) positive",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Atrial fibrillation at 160 bpm, heart straining",
+   "key": true
+  },
+  {
+   "site": "skin",
+   "system": "skeletal",
+   "result": "Hot, soaking wet skin; shin swelling (pretibial myxedema)",
+   "key": true
+  },
+  {
+   "site": "intestines",
+   "system": "digestive",
+   "result": "Hyperactive bowel, no pathogens on stool culture",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "CT normal; no bleed or meningitis signs",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, fast breathing (tachypnea) only",
+   "key": false
+  },
+  {
+   "site": "liver",
+   "system": "organs",
+   "result": "Mildly raised liver enzymes (transaminases), stressed",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "High glucose, high white cells (leukocytosis), no bacteremia",
+   "key": false
+  },
+  {
+   "site": "pancreas",
+   "system": "digestive",
+   "result": "Normal lipase; pancreas looks fine",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Propranolol, PTU, iodine, steroids",
+   "correct": true,
+   "why": "Beta-blockade slows the heart, PTU blocks hormone production and T4-to-T3 conversion, iodine (given after PTU) stops release, and steroids lower conversion further.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that, you treated the gland instead of the symptoms. Mark the calendar."
+  },
+  {
+   "name": "Broad-spectrum IV antibiotics",
+   "correct": false,
+   "why": "Fever and high white cells look like sepsis, but there's no infection, so the hormone surge keeps going.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Heart failing, fluid backing up",
+     "severity": 0.8
+    },
+    {
+     "site": "intestines",
+     "text": "C. diff colitis, bloody diarrhea",
+     "severity": 0.5
+    }
+   ],
+   "attending_line": "Great, the bacteria she doesn't have are terrified. Her thyroid isn't."
+  },
+  {
+   "name": "Aspirin for fever",
+   "correct": false,
+   "why": "Aspirin pushes thyroid hormone off its binding proteins, so more free hormone reaches the tissues and the storm gets worse.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Heart rate climbs past 190",
+     "severity": 0.9
+    },
+    {
+     "site": "stomach",
+     "text": "Gastric bleeding, coffee-ground vomit",
+     "severity": 0.5
+    }
+   ],
+   "attending_line": "You freed more hormone. Bold choice, aiming the fire hose at the fire."
+  },
+  {
+   "name": "Electrical cardioversion only",
+   "correct": false,
+   "why": "Shocking her back to a normal rhythm won't last while thyroid hormone keeps driving the heart, and new AF clots can break loose.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Stroke: right-sided weakness, slurred speech",
+     "severity": 0.8
+    },
+    {
+     "site": "heart",
+     "text": "AF returns within minutes",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "You rebooted the heart. The virus is still in the thyroid."
+  }
+ ],
+ "post_mortem": "Maya had stopped taking her Graves' medicine, and the pseudoephedrine in her cold pills, plus exam stress, tipped her into thyroid storm. Sweating in a cold room, her history, and the shin swelling all pointed to the thyroid, not to food poisoning or sepsis.",
+ "_source": "claude-opus-5-5"
+}

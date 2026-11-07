@@ -38,9 +38,50 @@ FAST_MODEL = os.environ.get("FAST_MODEL", "claude-haiku-5-5")      # visuals + i
 FAST_OFF = os.environ.get("FAST_THINKING", "off").lower() == "off"
 client = anthropic.AsyncAnthropic()
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_origin_regex=os.environ.get("ALLOWED_ORIGIN_REGEX") or None,
+                   allow_methods=["*"], allow_headers=["*"])
 CACHE = Path(__file__).with_name("cache")
 CACHE.mkdir(exist_ok=True)
+
+# ---- public hosting: seed the case/art pool from the repo, and stop strangers burning the API budget ----
+PUBLIC = os.environ.get("PUBLIC", "0") == "1"
+SEED = Path(__file__).with_name("seed")
+if SEED.exists():
+    import shutil
+    for src in SEED.rglob("*"):
+        dst = CACHE / src.relative_to(SEED)
+        if src.is_file() and not dst.exists():
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(src, dst)
+IP_LIMIT = int(os.environ.get("IP_LIMIT", "60"))          # AI calls per IP per IP_WINDOW seconds
+IP_WINDOW = int(os.environ.get("IP_WINDOW", "600"))
+DAILY_CAP = int(os.environ.get("DAILY_CAP", "2000"))      # AI calls per day for the whole site
+_hits: dict[str, list[float]] = {}
+_day = {"date": "", "n": 0}
+AI_PATHS = {"/case", "/stage", "/visualize", "/chat", "/treat", "/art"}
+
+
+@app.middleware("http")
+async def limiter(request, call_next):
+    from fastapi.responses import JSONResponse
+    if request.method == "POST" and request.url.path in AI_PATHS:
+        ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "?")).split(",")[0].strip()
+        now = time.time()
+        q = [t for t in _hits.get(ip, []) if now - t < IP_WINDOW]
+        today = time.strftime("%Y-%m-%d")
+        if _day["date"] != today:
+            _day.update(date=today, n=0)
+        if len(q) >= IP_LIMIT or _day["n"] >= DAILY_CAP:
+            # ok:false -> the game quietly falls back to its offline content
+            return JSONResponse({"ok": False, "error": "rate limited: slow down a bit"}, status_code=429,
+                                headers={"Access-Control-Allow-Origin": request.headers.get("origin", "*")})
+        q.append(now)
+        _hits[ip] = q
+        _day["n"] += 1
+        if len(_hits) > 5000:
+            _hits.clear()
+    return await call_next(request)
 
 
 async def call_tool(model: str, tool: dict, user, thinking_off: bool = False, max_tokens: int = 6000, system: str = CASE_SYSTEM) -> dict:
@@ -65,7 +106,7 @@ async def call_tool(model: str, tool: dict, user, thinking_off: bool = False, ma
 
 @app.get("/health")
 async def health():
-    return {"ok": True, "case_model": CASE_MODEL, "stage_model": STAGE_MODEL, "chat_model": CHAT_MODEL, "treat_model": TREAT_MODEL, "fellow": FELLOW_NAME, "key_set": bool(os.environ.get("ANTHROPIC_API_KEY"))}
+    return {"ok": True, "public": PUBLIC, "used_today": _day["n"], "case_model": CASE_MODEL, "stage_model": STAGE_MODEL, "chat_model": CHAT_MODEL, "treat_model": TREAT_MODEL, "fellow": FELLOW_NAME, "key_set": bool(os.environ.get("ANTHROPIC_API_KEY"))}
 
 
 @app.post("/case")
@@ -73,6 +114,9 @@ async def get_case(body: dict):
     """Serve a case instantly from the pool of pre-generated Claude cases (Opus takes ~25 s per case),
     and top the pool up in the background. {"fresh": true} forces a live generation."""
     pool = sorted(CACHE.glob("case_*.json"))
+    if PUBLIC and pool:
+        # public: serve only the pre-generated pool (Opus case writing is the priciest call)
+        return {"ok": True, "case": json.loads(random.choice(pool).read_text(encoding="utf-8")), "cached": True}
     if pool and not body.get("fresh"):
         if len(pool) < 12:
             asyncio.create_task(generate_case({}))

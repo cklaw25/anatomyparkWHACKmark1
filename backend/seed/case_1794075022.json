@@ -1,0 +1,185 @@
+{
+ "root_cause": "Carbon monoxide poisoning from a faulty gas heater",
+ "root_site": "blood",
+ "patient": {
+  "name": "Maya Lindqvist",
+  "age": 20,
+  "background": "Architecture student, healthy, occasional migraines. Studies late in a basement workshop."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Woke up with dull headache",
+   "clue": false
+  },
+  {
+   "time": "09:00",
+   "text": "Skipped breakfast, drank coffee",
+   "clue": false
+  },
+  {
+   "time": "11:00",
+   "text": "Lit gas heater in workshop",
+   "clue": true
+  },
+  {
+   "time": "13:30",
+   "text": "Ate leftover takeout sushi",
+   "clue": false
+  },
+  {
+   "time": "15:00",
+   "text": "Labmate left, also felt dizzy",
+   "clue": true
+  },
+  {
+   "time": "16:45",
+   "text": "Felt better walking outside",
+   "clue": true
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "brain",
+   "text": "Pounding headache and confusion",
+   "severity": 0.7
+  },
+  {
+   "site": "stomach",
+   "text": "Nausea and vomiting",
+   "severity": 0.5
+  },
+  {
+   "site": "heart",
+   "text": "Racing heart, chest tightness",
+   "severity": 0.4
+  }
+ ],
+ "findings": [
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Carboxyhemoglobin 28%: CO blocking oxygen on red cells",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Pulse oximeter reads 99%, falsely normal (SpO2 artifact)",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "organs",
+   "result": "Mild heart strain, slightly raised troponin",
+   "key": true
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Swollen-looking pale spots in deep brain (globus pallidus)",
+   "key": true
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, normal breathing sounds",
+   "key": false
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Mild irritation, no food poisoning toxins (gastritis)",
+   "key": false
+  },
+  {
+   "site": "intestines",
+   "system": "digestive",
+   "result": "Normal motility, no infection signs",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Lactate raised: tissues starving for oxygen",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Flushed pink skin, no rash (erythema)",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "No bleeding or mass on scan (hemorrhage ruled out)",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "100% oxygen, consider hyperbaric",
+   "correct": true,
+   "why": "High-flow oxygen pushes CO off hemoglobin, cutting its half-life from ~5 hours to ~1, and hyperbaric oxygen protects the brain and heart.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that. Oxygen for oxygen starvation. Someone call the newspapers."
+  },
+  {
+   "name": "Triptan for migraine",
+   "correct": false,
+   "why": "Triptans constrict blood vessels, starving an already oxygen-deprived heart and brain while CO keeps building.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Crushing chest pain, ischemia",
+     "severity": 0.8
+    },
+    {
+     "site": "brain",
+     "text": "Worsening confusion, near fainting",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "Great, you squeezed the arteries of a heart already gasping. Bold."
+  },
+  {
+   "name": "Antiemetic and IV fluids",
+   "correct": false,
+   "why": "Treating nausea as food poisoning ignores the CO, so tissue hypoxia continues and she may go back to the heater room.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Seizure from prolonged hypoxia",
+     "severity": 0.8
+    },
+    {
+     "site": "heart",
+     "text": "Irregular heartbeat, arrhythmia",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "The sushi is innocent. The sushi was always innocent."
+  },
+  {
+   "name": "Benzodiazepine for anxiety",
+   "correct": false,
+   "why": "Sedatives slow breathing, so less fresh air reaches the lungs to wash out CO, and they hide neurological decline.",
+   "if_wrong_cascade": [
+    {
+     "site": "lungs",
+     "text": "Shallow slow breathing",
+     "severity": 0.7
+    },
+    {
+     "site": "brain",
+     "text": "Unresponsive, hard to wake",
+     "severity": 0.8
+    }
+   ],
+   "attending_line": "She's not anxious, she's suffocating politely. Now she's suffocating quietly."
+  }
+ ],
+ "post_mortem": "A faulty gas heater in a closed basement workshop filled the air with carbon monoxide, which grabbed Maya's red blood cells and starved her brain and heart of oxygen. The giveaways were the labmate getting dizzy too, symptoms easing outdoors, and a normal pulse oximeter that can't tell CO from oxygen.",
+ "_source": "claude-opus-5-5"
+}

@@ -286,9 +286,10 @@ async function sendChat() {
   for (const tr of reply.treatments) fetchArt(tr);          // start drawing the items before you even click PREPARE
 }
 
-function offline(why) {
+function offline(why, waking = false) {
   const b = document.createElement('div'); b.id = 'offline-banner';
-  b.textContent = `⚠ OFFLINE: ${why}. The fellow, outcomes and art are canned. Run: cd backend && python -m uvicorn main:app --port 8010, then reload.`;
+  const fix = API.includes('localhost') ? ' Run: cd backend && python -m uvicorn main:app --port 8010, then reload.' : ' Try reloading in a minute.';
+  b.textContent = waking ? `⏳ ${why}…` : `⚠ OFFLINE: ${why}. The fellow, outcomes and art are canned.${fix}`;
   document.body.appendChild(b);
 }
 function offlineFellow() {
@@ -533,7 +534,14 @@ window.addEventListener('keydown', (e) => {
   $('paste-notes').onclick = () => { const lines = evidence.slice(sharedUpTo).map(evLine); sharedUpTo = evidence.length; $('chat-in').value += (($('chat-in').value ? '\n' : '') + lines.join('\n')); renderChat(); $('chat-in').focus(); };
   C = await loadCase();
   // make offline mode impossible to miss: without the backend the fellow is canned
-  fetch(API + '/health').then(r => r.json()).then(h => { if (!h.key_set) offline('backend has no API key'); }).catch(() => offline('backend on :8010 not running'));
+  // free hosting sleeps when idle: keep knocking for ~90 s before declaring offline
+  (async () => {
+    for (let i = 0; i < 18; i++) {
+      try { const h = await fetch(API + '/health').then(r => r.json()); $('offline-banner')?.remove(); if (!h.key_set) offline('backend has no API key'); return; }
+      catch { if (i === 0) offline('waking the server up (free hosting sleeps), give it up to a minute', true); await new Promise(r => setTimeout(r, 5000)); }
+    }
+    $('offline-banner')?.remove(); offline(API.includes('localhost') ? 'backend on :8010 not running' : 'the game server is not answering');
+  })();
   findings = [...C.findings];
   visPromise = effectsFor(C.initial_symptoms);     // the visual pipeline runs while you read the intro
   setMode('outside'); renderDay(); renderVitals(); renderEvidence(); renderTray(); renderLog();

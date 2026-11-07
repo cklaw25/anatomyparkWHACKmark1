@@ -1,0 +1,195 @@
+{
+ "root_cause": "Serotonin syndrome from sertraline plus tramadol and dextromethorphan",
+ "root_site": "brain",
+ "patient": {
+  "name": "Maya Okafor",
+  "age": 21,
+  "background": "Nursing student on sertraline for anxiety; sprained ankle playing football yesterday."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Took usual morning sertraline",
+   "clue": true
+  },
+  {
+   "time": "08:15",
+   "text": "Friend's tramadol for ankle",
+   "clue": true
+  },
+  {
+   "time": "10:00",
+   "text": "Lecture, felt jittery, sweaty",
+   "clue": false
+  },
+  {
+   "time": "12:30",
+   "text": "Cough syrup for scratchy throat",
+   "clue": true
+  },
+  {
+   "time": "14:00",
+   "text": "Two energy drinks studying",
+   "clue": false
+  },
+  {
+   "time": "16:40",
+   "text": "Collapsed shaking in library",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "left_leg",
+   "text": "Legs twitching, jerking, stiff calves",
+   "severity": 0.7
+  },
+  {
+   "site": "heart",
+   "text": "Racing heartbeat, high blood pressure",
+   "severity": 0.6
+  },
+  {
+   "site": "brain",
+   "text": "Agitated, confused, burning up",
+   "severity": 0.8
+  }
+ ],
+ "findings": [
+  {
+   "site": "spinal_cord",
+   "system": "nervous",
+   "result": "Overactive reflexes, repeating ankle jerks: inducible clonus",
+   "key": true
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Pupils wide, eyes flicking side to side: ocular clonus",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Tox screen: sertraline, tramadol, dextromethorphan all present",
+   "key": true
+  },
+  {
+   "site": "intestines",
+   "system": "digestive",
+   "result": "Loud, hyperactive gut sounds; diarrhea: hyperperistalsis",
+   "key": true
+  },
+  {
+   "site": "left_leg",
+   "system": "circulatory",
+   "result": "No clot in leg veins; Doppler ultrasound normal",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Hot, flushed, drenched in sweat: diaphoresis, 39.8\u00b0C",
+   "key": false
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Fast regular rhythm, sinus tachycardia, no structural problem",
+   "key": false
+  },
+  {
+   "site": "thyroid",
+   "system": "organs",
+   "result": "Thyroid hormones normal; no thyroid storm",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "organs",
+   "result": "CK mildly raised from muscle overactivity: creatine kinase",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "organs",
+   "result": "CT head clear; no bleed or meningitis signs",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Stop drugs, cyproheptadine, benzodiazepine",
+   "correct": true,
+   "why": "Stopping the serotonergic drugs and blocking 5-HT2A receptors with cyproheptadine while benzodiazepines calm the muscles shuts off the serotonin overload.",
+   "if_wrong_cascade": [],
+   "attending_line": "Look at that, someone actually read the med list. Frame it."
+  },
+  {
+   "name": "Dantrolene (muscle relaxant)",
+   "correct": false,
+   "why": "Dantrolene treats malignant hyperthermia, not serotonin excess, so the serotonin keeps building while the drug strains the liver.",
+   "if_wrong_cascade": [
+    {
+     "site": "liver",
+     "text": "Liver enzymes rising, drug hepatotoxicity",
+     "severity": 0.5
+    },
+    {
+     "site": "brain",
+     "text": "Still agitated, fever climbing",
+     "severity": 0.8
+    }
+   ],
+   "attending_line": "She hasn't had anesthesia. Wrong hyperthermia, Doctor."
+  },
+  {
+   "name": "Haloperidol (antipsychotic sedative)",
+   "correct": false,
+   "why": "Haloperidol blocks dopamine without fixing the serotonin overload, which can worsen rigidity and heat, and it prolongs the QT interval.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Prolonged QT, dangerous arrhythmia risk",
+     "severity": 0.7
+    },
+    {
+     "site": "joints",
+     "text": "Severe muscle rigidity, can't move",
+     "severity": 0.7
+    },
+    {
+     "site": "kidneys",
+     "text": "Dark urine from muscle breakdown",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "Great, you've traded one syndrome for two. Efficient."
+  },
+  {
+   "name": "Paracetamol and cooling blanket",
+   "correct": false,
+   "why": "The fever comes from overactive muscles rather than the brain's thermostat, so antipyretics fail while the cause keeps going.",
+   "if_wrong_cascade": [
+    {
+     "site": "blood",
+     "text": "Clotting failure, DIC bruising",
+     "severity": 0.7
+    },
+    {
+     "site": "kidneys",
+     "text": "Kidney injury from rhabdomyolysis",
+     "severity": 0.6
+    },
+    {
+     "site": "brain",
+     "text": "Seizures as temperature tops 41\u00b0C",
+     "severity": 0.9
+    }
+   ],
+   "attending_line": "A Tylenol for a chemical fire. Bold strategy."
+  }
+ ],
+ "post_mortem": "Maya was already taking sertraline, then took a friend's tramadol and a dextromethorphan cough syrup, and all three raise serotonin until it overloaded her nervous system. Clonus, wide pupils and a hyperactive gut in someone on an SSRI should have prompted a medication history before anyone went looking for a clot or a thyroid problem.",
+ "_source": "claude-opus-5-5"
+}

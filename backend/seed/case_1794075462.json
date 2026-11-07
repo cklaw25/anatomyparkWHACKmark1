@@ -1,0 +1,200 @@
+{
+ "root_cause": "Infectious mononucleosis (Epstein-Barr virus)",
+ "root_site": "blood",
+ "patient": {
+  "name": "Maya Okafor",
+  "age": 19,
+  "background": "First-year university student, rugby player, no medical history, new boyfriend"
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Slept through three alarms",
+   "clue": true
+  },
+  {
+   "time": "09:00",
+   "text": "Skipped lecture, sore throat",
+   "clue": false
+  },
+  {
+   "time": "11:15",
+   "text": "Shared water bottle with boyfriend",
+   "clue": true
+  },
+  {
+   "time": "13:00",
+   "text": "Couldn't finish lunch, swallowing hurts",
+   "clue": false
+  },
+  {
+   "time": "15:30",
+   "text": "Rugby practice, felt dizzy",
+   "clue": false
+  },
+  {
+   "time": "16:45",
+   "text": "Felt lumps in neck",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "lungs",
+   "text": "Very sore throat, white patches on tonsils",
+   "severity": 0.7
+  },
+  {
+   "site": "brain",
+   "text": "Crushing fatigue and headache",
+   "severity": 0.6
+  },
+  {
+   "site": "liver",
+   "text": "Mild ache under right ribs",
+   "severity": 0.3
+  }
+ ],
+ "findings": [
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Many large odd white cells: atypical lymphocytes",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Positive monospot test: heterophile antibodies",
+   "key": true
+  },
+  {
+   "site": "liver",
+   "system": "organs",
+   "result": "Liver enzymes mildly raised: transaminitis",
+   "key": true
+  },
+  {
+   "site": "bone_marrow",
+   "system": "skeletal",
+   "result": "Marrow active but normal, no leukemia cells: reactive hyperplasia",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Swollen tonsils, white exudate, airway open: tonsillitis",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Rapid strep test negative: no Streptococcus",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Fast but normal rhythm: sinus tachycardia",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Kidneys filtering normally: normal creatinine",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "No neck stiffness, no swelling: meningitis ruled out",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Tiny red dots on palate: petechiae",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Rest, fluids, no contact sports",
+   "correct": true,
+   "why": "EBV is viral and clears on its own; avoiding sport protects the swollen spleen from rupturing.",
+   "if_wrong_cascade": [],
+   "attending_line": "Doing nothing, correctly. Rarest skill in medicine. Don't let it go to your head."
+  },
+  {
+   "name": "Amoxicillin (antibiotic)",
+   "correct": false,
+   "why": "Antibiotics don't kill viruses, and amoxicillin with EBV triggers a widespread itchy rash in most patients.",
+   "if_wrong_cascade": [
+    {
+     "site": "skin",
+     "text": "Itchy red rash over whole body",
+     "severity": 0.6
+    },
+    {
+     "site": "joints",
+     "text": "Achy swollen joints",
+     "severity": 0.3
+    },
+    {
+     "site": "intestines",
+     "text": "Diarrhea from gut bacteria wiped out",
+     "severity": 0.4
+    }
+   ],
+   "attending_line": "Congratulations, you've painted her pink. The virus is unimpressed."
+  },
+  {
+   "name": "Clear her for rugby",
+   "correct": false,
+   "why": "Mono enlarges the spleen, and a tackle can rupture it, causing major internal bleeding.",
+   "if_wrong_cascade": [
+    {
+     "site": "blood",
+     "text": "Sudden blood loss, pale and faint",
+     "severity": 0.9
+    },
+    {
+     "site": "heart",
+     "text": "Racing pulse, falling blood pressure",
+     "severity": 0.8
+    },
+    {
+     "site": "intestines",
+     "text": "Sharp left belly and shoulder pain",
+     "severity": 0.8
+    }
+   ],
+   "attending_line": "Great plan. Let's also juggle knives. The spleen thanks you, briefly."
+  },
+  {
+   "name": "High-dose acetaminophen around the clock",
+   "correct": false,
+   "why": "Her liver is already inflamed by EBV; heavy acetaminophen adds toxic strain on it.",
+   "if_wrong_cascade": [
+    {
+     "site": "liver",
+     "text": "Worsening liver pain, yellow eyes",
+     "severity": 0.7
+    },
+    {
+     "site": "stomach",
+     "text": "Nausea and vomiting",
+     "severity": 0.5
+    },
+    {
+     "site": "blood",
+     "text": "Slow clotting, easy bruising",
+     "severity": 0.4
+    }
+   ],
+   "attending_line": "Her liver was already sick. You decided it needed homework."
+  }
+ ],
+ "post_mortem": "Maya picked up Epstein-Barr virus through saliva and got mononucleosis, which looks a lot like strep throat. The negative strep test, atypical lymphocytes, extreme tiredness and shared water bottle all pointed to the 'kissing disease', not bacteria.",
+ "_source": "claude-opus-5-5"
+}

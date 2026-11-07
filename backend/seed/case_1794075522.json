@@ -1,0 +1,185 @@
+{
+ "root_cause": "Carbon monoxide poisoning from a faulty gas heater",
+ "root_site": "blood",
+ "patient": {
+  "name": "Lena Okafor",
+  "age": 21,
+  "background": "Engineering student, healthy, new basement flat with old gas heater, migraine history"
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Woke with pounding headache",
+   "clue": false
+  },
+  {
+   "time": "08:15",
+   "text": "Roommate also felt dizzy",
+   "clue": true
+  },
+  {
+   "time": "10:00",
+   "text": "Lecture hall, felt better",
+   "clue": true
+  },
+  {
+   "time": "12:30",
+   "text": "Skipped lunch, coffee only",
+   "clue": false
+  },
+  {
+   "time": "15:00",
+   "text": "Studied at home, heater on",
+   "clue": true
+  },
+  {
+   "time": "16:40",
+   "text": "Vomited, chest felt tight",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "brain",
+   "text": "Throbbing headache and confusion",
+   "severity": 0.7
+  },
+  {
+   "site": "stomach",
+   "text": "Nausea and vomiting",
+   "severity": 0.5
+  },
+  {
+   "site": "heart",
+   "text": "Chest tightness, racing pulse",
+   "severity": 0.4
+  }
+ ],
+ "findings": [
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Carboxyhemoglobin 28%; CO stuck where oxygen should ride",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Finger oxygen reads normal 99%, misleading (pulse oximetry)",
+   "key": true
+  },
+  {
+   "site": "heart",
+   "system": "organs",
+   "result": "Mild heart muscle strain, slightly raised troponin",
+   "key": true
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "Brain cells starved of oxygen, early hypoxia changes",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "High lactate: tissues burning fuel without oxygen",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Clear lungs, no pneumonia or clot (normal X-ray)",
+   "key": false
+  },
+  {
+   "site": "stomach",
+   "system": "digestive",
+   "result": "Irritated lining from caffeine, mild gastritis",
+   "key": false
+  },
+  {
+   "site": "skin",
+   "system": "organs",
+   "result": "Normal color, no rash or cyanosis",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Kidneys fine, mild dehydration (raised urea)",
+   "key": false
+  },
+  {
+   "site": "spinal_cord",
+   "system": "nervous",
+   "result": "No meningitis signs, normal reflexes",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "100% high-flow oxygen",
+   "correct": true,
+   "why": "Pure oxygen pushes CO off hemoglobin, cutting its half-life from ~5 hours to ~1 hour.",
+   "if_wrong_cascade": [],
+   "attending_line": "Oxygen. For someone who can't get oxygen. Groundbreaking, but correct."
+  },
+  {
+   "name": "Sumatriptan for migraine",
+   "correct": false,
+   "why": "Triptans narrow blood vessels, starving an already oxygen-starved heart.",
+   "if_wrong_cascade": [
+    {
+     "site": "heart",
+     "text": "Crushing chest pain, coronary spasm",
+     "severity": 0.8
+    },
+    {
+     "site": "brain",
+     "text": "Worsening confusion, slurred speech",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "Yes, squeeze the arteries of the oxygen-starved heart. Bold."
+  },
+  {
+   "name": "Antibiotics for viral flu",
+   "correct": false,
+   "why": "No infection exists; CO keeps building while she goes home to the heater.",
+   "if_wrong_cascade": [
+    {
+     "site": "brain",
+     "text": "Seizure, then unresponsive",
+     "severity": 0.9
+    },
+    {
+     "site": "intestines",
+     "text": "Antibiotic diarrhea",
+     "severity": 0.3
+    }
+   ],
+   "attending_line": "Flu doesn't give the roommate the same headache at the same address."
+  },
+  {
+   "name": "Lorazepam for anxiety",
+   "correct": false,
+   "why": "Sedation slows breathing, so less oxygen comes in and CO clears even slower.",
+   "if_wrong_cascade": [
+    {
+     "site": "lungs",
+     "text": "Shallow, slow breathing",
+     "severity": 0.8
+    },
+    {
+     "site": "heart",
+     "text": "Irregular heartbeat from hypoxia",
+     "severity": 0.7
+    }
+   ],
+   "attending_line": "She's not panicking, she's suffocating. Calming her won't fix that."
+  }
+ ],
+ "post_mortem": "Lena's old basement gas heater was leaking carbon monoxide, which binds hemoglobin 200 times more tightly than oxygen and slowly suffocated her tissues. The giveaways were a roommate with the same symptoms, feeling better away from home, and a \"normal\" finger oxygen reading that can't tell CO from oxygen.",
+ "_source": "claude-opus-5-5"
+}

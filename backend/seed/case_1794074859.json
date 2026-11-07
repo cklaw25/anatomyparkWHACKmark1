@@ -1,0 +1,190 @@
+{
+ "root_cause": "Infectious mononucleosis (Epstein-Barr virus) with enlarged spleen",
+ "root_site": "blood",
+ "patient": {
+  "name": "Jordan Okafor",
+  "age": 19,
+  "background": "First-year student, rugby player, new girlfriend; no medical history, no allergies."
+ },
+ "day_events": [
+  {
+   "time": "07:30",
+   "text": "Overslept, still exhausted",
+   "clue": true
+  },
+  {
+   "time": "09:00",
+   "text": "Skipped lecture, swallowing hurts",
+   "clue": false
+  },
+  {
+   "time": "11:15",
+   "text": "Shared girlfriend's water bottle",
+   "clue": true
+  },
+  {
+   "time": "13:00",
+   "text": "Ate only ice cream",
+   "clue": false
+  },
+  {
+   "time": "15:30",
+   "text": "Left rugby practice, side ache",
+   "clue": true
+  },
+  {
+   "time": "16:45",
+   "text": "Clinic visit, fever 38.9\u00b0C",
+   "clue": false
+  }
+ ],
+ "initial_symptoms": [
+  {
+   "site": "lungs",
+   "text": "Severe sore throat, white tonsil patches",
+   "severity": 0.7
+  },
+  {
+   "site": "brain",
+   "text": "Crushing fatigue for two weeks",
+   "severity": 0.6
+  },
+  {
+   "site": "skin",
+   "text": "Swollen tender lumps in neck",
+   "severity": 0.4
+  }
+ ],
+ "findings": [
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Many large odd white cells: atypical lymphocytes",
+   "key": true
+  },
+  {
+   "site": "blood",
+   "system": "organs",
+   "result": "Monospot test positive: heterophile antibodies",
+   "key": true
+  },
+  {
+   "site": "liver",
+   "system": "organs",
+   "result": "Liver enzymes mildly raised: viral hepatitis pattern",
+   "key": true
+  },
+  {
+   "site": "bone_marrow",
+   "system": "skeletal",
+   "result": "Spleen enlarged under left ribs: splenomegaly",
+   "key": true
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Tonsils swollen with white exudate: tonsillitis",
+   "key": false
+  },
+  {
+   "site": "blood",
+   "system": "circulatory",
+   "result": "Rapid strep test negative: no Streptococcus",
+   "key": false
+  },
+  {
+   "site": "heart",
+   "system": "circulatory",
+   "result": "Fast but regular heartbeat: sinus tachycardia from fever",
+   "key": false
+  },
+  {
+   "site": "lungs",
+   "system": "respiratory",
+   "result": "Lungs clear, no pneumonia: normal auscultation",
+   "key": false
+  },
+  {
+   "site": "kidneys",
+   "system": "organs",
+   "result": "Urine slightly concentrated: mild dehydration",
+   "key": false
+  },
+  {
+   "site": "brain",
+   "system": "nervous",
+   "result": "No neck stiffness, alert: meningitis unlikely",
+   "key": false
+  }
+ ],
+ "treatments": [
+  {
+   "name": "Rest, fluids, no contact sports",
+   "correct": true,
+   "why": "EBV is viral so antibiotics do nothing; supportive care plus avoiding sport for weeks protects the swollen, fragile spleen.",
+   "if_wrong_cascade": [],
+   "attending_line": "Boring, correct, and nobody gets an itchy rash. I hate how right you are."
+  },
+  {
+   "name": "Amoxicillin (antibiotic)",
+   "correct": false,
+   "why": "Antibiotics don't kill viruses, and amoxicillin in mono triggers a widespread rash in most patients.",
+   "if_wrong_cascade": [
+    {
+     "site": "skin",
+     "text": "Itchy red rash covering whole body",
+     "severity": 0.6
+    },
+    {
+     "site": "intestines",
+     "text": "Watery diarrhea from gut flora disruption",
+     "severity": 0.4
+    }
+   ],
+   "attending_line": "Congratulations, you treated a virus with penicillin. He's now polka-dotted."
+  },
+  {
+   "name": "IV ceftriaxone, admit",
+   "correct": false,
+   "why": "Broad-spectrum antibiotics miss the virus and wipe out gut bacteria, letting C. difficile take over.",
+   "if_wrong_cascade": [
+    {
+     "site": "intestines",
+     "text": "Bloody diarrhea, C. difficile colitis",
+     "severity": 0.7
+    },
+    {
+     "site": "liver",
+     "text": "Gallbladder sludge, upper right pain",
+     "severity": 0.3
+    }
+   ],
+   "attending_line": "Bigger gun, same imaginary bacteria. The C. diff thanks you."
+  },
+  {
+   "name": "Ibuprofen, clear for rugby",
+   "correct": false,
+   "why": "A tackle can rupture the enlarged spleen, and NSAIDs impair platelets, worsening the internal bleeding.",
+   "if_wrong_cascade": [
+    {
+     "site": "blood",
+     "text": "Internal bleeding, spleen rupture",
+     "severity": 0.9
+    },
+    {
+     "site": "heart",
+     "text": "Racing pulse, blood pressure dropping",
+     "severity": 0.8
+    },
+    {
+     "site": "brain",
+     "text": "Dizzy, confused, nearly fainting",
+     "severity": 0.6
+    }
+   ],
+   "attending_line": "Great, send the walking water balloon into a scrum. What could go wrong?"
+  }
+ ],
+ "post_mortem": "Jordan caught Epstein-Barr virus through saliva, and it looked exactly like strep throat, but the negative strep test, atypical lymphocytes and enlarged spleen showed it was mono. A good doctor would have noticed the shared water bottle, two weeks of exhaustion and the left-side ache at rugby, and kept him off antibiotics and off the pitch.",
+ "_source": "claude-opus-5-5"
+}
