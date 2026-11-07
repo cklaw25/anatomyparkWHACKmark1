@@ -13,6 +13,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from schema import CASE_TOOL, STAGE_TOOL, CASE_SYSTEM
+from schema2 import (VISUALIZE_TOOL, FELLOW_TOOL, TREAT_TOOL, ART_TOOL, FELLOW_NAME, FELLOW_SYSTEM,
+                     TREAT_SYSTEM, VIS_SYSTEM, ART_SYSTEM)
+import re
 
 
 def load_env():
@@ -29,6 +32,10 @@ CASE_MODEL = os.environ.get("CASE_MODEL", "claude-opus-5-5")
 STAGE_MODEL = os.environ.get("STAGE_MODEL", "claude-haiku-5-5")
 EFFORT = os.environ.get("EFFORT", "low")
 STAGE_THINKING_OFF = os.environ.get("STAGE_THINKING", "on").lower() == "off"
+CHAT_MODEL = os.environ.get("CHAT_MODEL", "claude-haiku-5-5")      # the fellow on the pager (time is paused while chatting)
+TREAT_MODEL = os.environ.get("TREAT_MODEL", "claude-opus-5-5")     # ground truth: what a treatment really does
+FAST_MODEL = os.environ.get("FAST_MODEL", "claude-haiku-5-5")      # visuals + item art
+FAST_OFF = os.environ.get("FAST_THINKING", "off").lower() == "off"
 client = anthropic.AsyncAnthropic()
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -36,15 +43,16 @@ CACHE = Path(__file__).with_name("cache")
 CACHE.mkdir(exist_ok=True)
 
 
-async def call_tool(model: str, tool: dict, user: str, thinking_off: bool = False, max_tokens: int = 6000) -> dict:
+async def call_tool(model: str, tool: dict, user, thinking_off: bool = False, max_tokens: int = 6000, system: str = CASE_SYSTEM) -> dict:
     extra = {"output_config": {"effort": EFFORT}}
     if thinking_off:
         extra["thinking"] = {"type": "disabled"}
+    messages = user if isinstance(user, list) else [{"role": "user", "content": user}]
     resp = await client.messages.create(
         model=model, max_tokens=max_tokens,
-        system=[{"type": "text", "text": CASE_SYSTEM, "cache_control": {"type": "ephemeral"}}],
+        system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
         tools=[tool], tool_choice={"type": "auto"},
-        messages=[{"role": "user", "content": user}],
+        messages=messages,
         extra_body=extra,
     )
     if resp.stop_reason == "refusal":
@@ -57,7 +65,7 @@ async def call_tool(model: str, tool: dict, user: str, thinking_off: bool = Fals
 
 @app.get("/health")
 async def health():
-    return {"ok": True, "case_model": CASE_MODEL, "stage_model": STAGE_MODEL, "key_set": bool(os.environ.get("ANTHROPIC_API_KEY"))}
+    return {"ok": True, "case_model": CASE_MODEL, "stage_model": STAGE_MODEL, "chat_model": CHAT_MODEL, "treat_model": TREAT_MODEL, "fellow": FELLOW_NAME, "key_set": bool(os.environ.get("ANTHROPIC_API_KEY"))}
 
 
 @app.post("/case")
@@ -106,3 +114,112 @@ async def next_stage(body: dict):
     except Exception as e:  # noqa: BLE001
         print("stage error:", type(e).__name__, e)
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+# ======================= v2: House-style loop =======================
+ART = CACHE / "art"
+ART.mkdir(exist_ok=True)
+
+
+def ms(t0):
+    return round((time.perf_counter() - t0) * 1000)
+
+
+@app.post("/visualize")
+async def visualize(body: dict):
+    """Symptoms -> visible effects (the 'image pipeline': Claude picks WHAT shows, our renderer draws it)."""
+    t0 = time.perf_counter()
+    syms = body.get("symptoms", [])
+    lines = "\n".join(f"{i}. site={s.get('site')} : {s.get('text')}" for i, s in enumerate(syms))
+    try:
+        out = await call_tool(FAST_MODEL, VISUALIZE_TOOL, "Symptoms:\n" + lines, thinking_off=FAST_OFF, max_tokens=2000, system=VIS_SYSTEM)
+        return {"ok": True, "items": out["items"], "ms": ms(t0)}
+    except Exception as e:  # noqa: BLE001
+        print("visualize error:", type(e).__name__, e)
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/chat")
+async def chat(body: dict):
+    """The fellow on the pager. He only knows what the lead tells him + the monitor + treatment history (NOT the hidden case)."""
+    t0 = time.perf_counter()
+    msgs = []
+    for h in body.get("history", [])[-14:]:
+        role = "assistant" if h.get("role") == "fellow" else "user"
+        if msgs and msgs[-1]["role"] == role:
+            msgs[-1]["content"] += "\n" + h.get("text", "")
+        else:
+            msgs.append({"role": role, "content": h.get("text", "")})
+    if msgs and msgs[0]["role"] == "assistant":
+        msgs.insert(0, {"role": "user", "content": "(the lead pages you)"})
+    p = body.get("patient") or {}
+    ctx = {"patient": {"name": p.get("name"), "age": p.get("age")}, "clock": body.get("clock"), "monitor_vitals": body.get("vitals"),
+           "treatments_given_and_results": body.get("treatments", [])}
+    note = "\n\n[context, not typed by the lead: " + json.dumps(ctx) + "]"
+    if msgs and msgs[-1]["role"] == "user":
+        msgs[-1]["content"] += note
+    else:
+        msgs.append({"role": "user", "content": "(no message)" + note})
+    try:
+        out = await call_tool(CHAT_MODEL, FELLOW_TOOL, msgs, thinking_off=("haiku" in CHAT_MODEL), max_tokens=2500, system=FELLOW_SYSTEM)
+        return {"ok": True, "reply": out, "ms": ms(t0), "model": CHAT_MODEL}
+    except Exception as e:  # noqa: BLE001
+        print("chat error:", type(e).__name__, e)
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/treat")
+async def treat(body: dict):
+    """Ground truth: Claude (knowing the hidden case) decides what the treatment the player physically gave really does."""
+    t0 = time.perf_counter()
+    case = body.get("case", {})
+    hidden = {k: case.get(k) for k in ("root_cause", "root_site", "patient", "day_events", "post_mortem")}
+    user = ("HIDDEN CASE: " + json.dumps(hidden) + "\nCURRENT PROBLEMS: " + json.dumps(body.get("symptoms", []))
+            + "\nVITALS: " + json.dumps(body.get("vitals", {})) + "\nEARLIER TREATMENTS: " + json.dumps(body.get("history", []))
+            + "\nTREATMENT JUST GIVEN: " + json.dumps(body.get("treatment", {})))
+    for model in dict.fromkeys((TREAT_MODEL, FAST_MODEL)):
+        try:
+            out = await call_tool(model, TREAT_TOOL, user, thinking_off=("haiku" in model), max_tokens=3000, system=TREAT_SYSTEM)
+            return {"ok": True, "result": out, "ms": ms(t0), "model": model}
+        except Exception as e:  # noqa: BLE001
+            print("treat error:", model, type(e).__name__, e)
+    return {"ok": False}
+
+
+def clean_svg(svg: str) -> str:
+    m = re.search(r"<svg[\s\S]*?</svg>", svg or "")
+    if not m:
+        return ""
+    s = m.group(0)
+    s = re.sub(r"<(script|foreignObject|image|iframe)[\s\S]*?(</\1>|/>)", "", s, flags=re.I)
+    s = re.sub(r"\son\w+\s*=\s*(\"[^\"]*\"|'[^']*')", "", s, flags=re.I)
+    s = re.sub(r"(href|xlink:href)\s*=\s*(\"(?!#)[^\"]*\"|'(?!#)[^']*')", "", s, flags=re.I)
+    return s
+
+
+ART_HOW = {"injection": "a syringe with a needle; tint the liquid to suit the drug", "iv_drip": "an IV fluid bag with a short tube",
+           "oral": "a pill, tablet, capsule or small medicine cup", "defibrillator": "a pair of defibrillator paddles with a cable",
+           "cpr": "two hands stacked for chest compressions", "surgery": "a scalpel or the right surgical instrument",
+           "oxygen": "an oxygen face mask with tubing", "apply": "the pad, bandage, tourniquet or pack it is"}
+
+
+@app.post("/art")
+async def art(body: dict):
+    """On-the-spot item art: any treatment the fellow invents gets its own drawn item (cached by name)."""
+    t0 = time.perf_counter()
+    name, kind = str(body.get("name", "item"))[:60], str(body.get("kind", "apply"))
+    slug = re.sub(r"[^a-z0-9]+", "_", f"{kind}_{name}".lower()).strip("_")[:80]
+    f = ART / f"{slug}.svg"
+    if f.exists():
+        return {"ok": True, "svg": f.read_text(encoding="utf-8"), "cached": True}
+    try:
+        out = await call_tool(FAST_MODEL, ART_TOOL, f"Item: {name}. Draw it as {ART_HOW.get(kind, 'the item')}.",
+                              thinking_off=FAST_OFF, max_tokens=3000, system=ART_SYSTEM)
+        svg = clean_svg(out.get("svg", ""))
+        if not svg:
+            raise ValueError("no svg")
+        f.write_text(svg, encoding="utf-8")
+        return {"ok": True, "svg": svg, "ms": ms(t0)}
+    except Exception as e:  # noqa: BLE001
+        print("art error:", type(e).__name__, e)
+        return {"ok": False}

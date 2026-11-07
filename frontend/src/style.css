@@ -24,7 +24,8 @@ header#top { height:56px; display:flex; align-items:center; gap:24px; padding:0 
 #day li.future { opacity:.25; }
 #centre { position:relative; display:flex; flex-direction:column; min-width:0; }
 #scan-title { font-size:20px; } #scan-hint { font: 12px Consolas, monospace; color:var(--dim); }
-svg#body { flex:1; min-height:0; width:100%; background: radial-gradient(ellipse at center, var(--tint, #301015) 0%, transparent 65%); }
+#stage { position:relative; flex:1; min-height:0; display:flex; }
+svg#body { flex:1; min-height:0; width:100%; height:100%; touch-action:none; background: radial-gradient(ellipse at center, var(--tint, #301015) 0%, transparent 65%); }
 svg#body .scanline { animation: sweep 0.9s ease-out forwards; }
 @keyframes sweep { from { transform: translateY(0); opacity:.9 } to { transform: translateY(880px); opacity:0 } }
 .site { cursor:pointer; }
@@ -32,7 +33,7 @@ svg#body .scanline { animation: sweep 0.9s ease-out forwards; }
 .site:hover .ring { stroke-width:4; }
 .site text { font: 13px Consolas, monospace; fill: var(--white); paint-order: stroke; stroke:#000; stroke-width:3px; pointer-events:none; }
 .glow { animation: glow 1.1s infinite alternate; } @keyframes glow { from { opacity:.35 } to { opacity:.95 } }
-#attending { display:flex; gap:12px; align-items:center; border:2px solid var(--amber); background:#1a120a; border-radius:10px; padding:10px 14px; min-height:74px; }
+#attending { display:flex; margin-top:8px; gap:12px; align-items:center; border:2px solid var(--amber); background:#1a120a; border-radius:10px; padding:10px 14px; min-height:74px; }
 #attending .face { background-image:url('/art/attending.png'); background-size:cover; width:50px; height:50px; flex:none; border-radius:50%; border:2px solid var(--amber); display:grid; place-items:center; color:var(--amber); font-size:18px; background:#3c2d1e; }
 #attending b { color:var(--amber); } .live { color:#000; background:var(--red); border-radius:4px; padding:0 5px; font-size:11px; }
 #att-text { font: 15px Consolas, monospace; margin-top:4px; }

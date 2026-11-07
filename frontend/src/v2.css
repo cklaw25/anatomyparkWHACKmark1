@@ -1,0 +1,121 @@
+/* v2: bedside view, pager chat, tray, delivery actions */
+.chart-bg { font: 13px Consolas, monospace; color: #c8d6e2; margin: 0 0 10px; }
+#attending .pager-text { flex: 1; min-width: 0; }
+#page-btn { background: var(--amber); color: #1a120a; border: 0; border-radius: 8px; padding: 12px 16px; font: 15px "Bahnschrift", sans-serif; cursor: pointer; white-space: nowrap; font-weight: 600; }
+#page-btn:hover { filter: brightness(1.1); }
+.cap { font: 11px Consolas, monospace; color: var(--dim); letter-spacing: .5px; margin: 8px 0 4px; }
+
+/* evidence lines are clickable -> tell the fellow */
+#evidence li[data-i] { cursor: pointer; border-radius: 4px; }
+#evidence li[data-i]:hover { background: #18263a; }
+#evidence .tell { color: var(--cyan); float: right; opacity: 0; }
+#evidence li:hover .tell { opacity: 1; }
+
+/* outside-view site markers */
+.site.exam .ring { stroke-width: 1.5; }
+.site.exam:hover .ring { stroke: #fff; stroke-width: 3; }
+.site.exam:hover circle:first-child { fill: #ffffff14; }
+
+/* patient animations */
+#patient { transform-origin: 300px 440px; }
+#patient.seize { animation: seize .09s infinite alternate; }
+#patient.tremor { animation: tremor .14s infinite alternate; }
+@keyframes seize { from { transform: translate(-5px, 2px) rotate(-1.2deg); } to { transform: translate(5px, -2px) rotate(1.2deg); } }
+@keyframes tremor { from { transform: translateX(-1.4px); } to { transform: translateX(1.4px); } }
+.breathe { animation: breathe 4s ease-in-out infinite; }
+.breathe-fast { animation: breathe 1.3s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.025, 1.012); } }
+.drip { animation: drip 1.6s ease-in infinite; }
+@keyframes drip { 0% { opacity: 0; transform: translateY(-6px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(16px); } }
+.sweat { animation: sweat 2.2s linear infinite; }
+@keyframes sweat { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(26px); } }
+.pulse-fx { animation: glow .7s infinite alternate; }
+.cough { animation: cough 1.4s ease-out infinite; }
+@keyframes cough { 0%, 60% { opacity: 0; transform: translateX(-6px); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(10px); } }
+.fx-label { font: bold 26px "Bahnschrift", sans-serif; fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 3px; }
+.fx-label.q { fill: #ffd24a; animation: bob 1.6s ease-in-out infinite; }
+.fx-label.z { fill: #9fc8ff; animation: bob 2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-8px); opacity: .5; } }
+svg#body.jolt { animation: jolt .5s; }
+@keyframes jolt { 20% { transform: translateY(-14px) scale(1.02); } 40% { transform: translateY(4px); } }
+svg#body.compress { animation: compress .18s; }
+@keyframes compress { 50% { transform: scaleY(.97) translateY(10px); } }
+#flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 30; }
+#flash.on { animation: flash .45s; }
+@keyframes flash { 0% { opacity: .95; } 100% { opacity: 0; } }
+
+/* delivery action */
+.act-label { font: bold 17px "Bahnschrift", sans-serif; fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 4px; }
+.act-sub { font: 12px Consolas, monospace; fill: #9fc8ff; paint-order: stroke; stroke: #000; stroke-width: 3px; }
+
+/* outcome toast */
+#outcome { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); width: min(460px, 92%); background: #0b121bee; border: 2px solid var(--line);
+  border-radius: 10px; padding: 10px 14px; font: 14px Consolas, monospace; display: none; z-index: 3; }
+#outcome.show { display: block; animation: pop .25s; }
+#outcome .big { font: bold 22px "Bahnschrift", sans-serif; letter-spacing: 2px; }
+#outcome.good { border-color: var(--green); } #outcome.good .big { color: var(--green); }
+#outcome.bad { border-color: var(--red); } #outcome.bad .big { color: var(--red); }
+#outcome.meh .big { color: var(--amber); }
+#outcome small { display: block; color: var(--dim); margin-top: 4px; }
+#outcome .new { color: var(--amber); margin-top: 6px; }
+@keyframes pop { from { transform: translateX(-50%) scale(.9); opacity: 0; } }
+
+/* tray */
+#tray-wrap { border: 2px dashed var(--line); border-radius: 10px; padding: 4px 10px 8px; margin-top: 6px; }
+#tray { display: flex; gap: 8px; flex-wrap: wrap; font: 13px Consolas, monospace; min-height: 46px; align-items: center; }
+#tray .item { display: flex; align-items: center; gap: 8px; background: #18202c; border: 1px solid var(--amber); border-radius: 8px; padding: 4px 10px 4px 4px;
+  cursor: grab; user-select: none; touch-action: none; position: relative; max-width: 260px; }
+#tray .item:hover { background: #222c3a; }
+#tray .item .ic { width: 46px; height: 46px; flex: none; }
+#tray .item b { display: block; color: var(--white); }
+#tray .item small { color: var(--dim); font-size: 11px; }
+#tray .item .x { position: absolute; top: -6px; right: -6px; background: #300; color: #f88; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: grid; place-items: center; cursor: pointer; }
+.ic svg { width: 100%; height: 100%; display: block; }
+.ghost { position: fixed; width: 80px; height: 80px; pointer-events: none; z-index: 40; filter: drop-shadow(0 6px 10px #000a); }
+.ghost svg { width: 100%; height: 100%; }
+
+/* pause veil + chat drawer */
+#veil { position: fixed; inset: 56px min(520px, 100vw) 0 0; background: rgba(4, 8, 14, .45); display: none; z-index: 8; place-items: start center; padding-top: 70px; pointer-events: none; }
+#veil div { font: bold 28px "Bahnschrift", sans-serif; color: var(--cyan); letter-spacing: 3px; text-align: center; text-shadow: 0 0 12px #000; }
+#veil small { display: block; font: 13px Consolas, monospace; color: var(--white); letter-spacing: 0; }
+body.chat-open #veil { display: grid; }
+body.busy #veil { display: grid; inset: 56px 0 0 0; }
+body.busy #veil div::after { content: ' · body reacting…'; font-size: 16px; }
+#chat { position: fixed; top: 56px; right: 0; bottom: 0; width: min(520px, 100vw); background: #0b1119; border-left: 2px solid var(--amber); z-index: 9;
+  display: flex; flex-direction: column; transform: translateX(100%); transition: transform .2s ease-out; }
+body.chat-open #chat { transform: none; }
+.chat-head { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.chat-head small { display: block; color: var(--dim); font: 12px Consolas, monospace; }
+.chat-head b { color: var(--amber); font-size: 18px; }
+.chat-head button { margin-left: auto; background: none; border: 1px solid var(--line); color: var(--white); border-radius: 6px; width: 34px; height: 34px; cursor: pointer; }
+.face.big, .chat-head .face { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--amber); background: #3c2d1e url('/art/fellow.png') center/cover; display: grid; place-items: center; color: var(--amber); flex: none; }
+#chat-log { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; font: 14px Consolas, monospace; }
+.msg { border-radius: 10px; padding: 9px 12px; max-width: 94%; line-height: 1.35; }
+.msg.lead { align-self: flex-end; background: #16324a; border: 1px solid #2c5a80; white-space: pre-wrap; }
+.msg.fellow { align-self: flex-start; background: #1a140c; border: 1px solid #6a4a1e; }
+.msg.fellow > b { color: var(--amber); font: 12px "Bahnschrift", sans-serif; letter-spacing: 1px; }
+.msg.typing .dots { animation: glow .5s infinite alternate; }
+.ddx .dd { display: grid; grid-template-columns: 62px 1fr; gap: 0 8px; margin: 4px 0; }
+.ddx .dd small { grid-column: 2; color: var(--dim); font-size: 12px; }
+.lk { font-size: 10px; text-transform: uppercase; text-align: center; border-radius: 4px; padding: 2px 0; height: fit-content; }
+.lk.high { background: #5a1414; color: #ff9a9a; } .lk.medium { background: #4a3a10; color: #ffd27a; } .lk.low { background: #1e2a36; color: #9ab; }
+.sugg { margin-top: 8px; color: var(--cyan); font-size: 13px; }
+.tx { display: flex; gap: 8px; align-items: center; background: #121a24; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin: 6px 0; }
+.tx .ic { width: 44px; height: 44px; flex: none; }
+.tx .body { flex: 1; min-width: 0; } .tx .body small { display: block; font-size: 11.5px; } .tx .risk { color: #ff9a8a; }
+.prep { background: var(--amber); color: #1a120a; border: 0; border-radius: 6px; padding: 8px 10px; font: 600 12px "Bahnschrift", sans-serif; cursor: pointer; }
+.prep:disabled { background: #2a3a2a; color: var(--green); cursor: default; }
+.chat-foot { border-top: 1px solid var(--line); padding: 10px 14px; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+#paste-notes { grid-column: 1 / 3; justify-self: start; background: #14202c; color: var(--cyan); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; font: 12px Consolas, monospace; }
+#paste-notes:disabled { opacity: .5; cursor: default; }
+#chat-in { background: #0e141e; color: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 14px Consolas, monospace; resize: vertical; }
+#chat-send { background: var(--red); color: #fff; border: 0; border-radius: 8px; padding: 0 18px; font: 600 14px "Bahnschrift", sans-serif; cursor: pointer; }
+#cascade .oc { font-weight: bold; }
+#cascade .o-cured .oc, #cascade .o-improving .oc { color: var(--green); }
+#cascade .o-worse .oc, #cascade .o-much_worse .oc { color: var(--red); }
+#cascade .o-no_change .oc { color: var(--amber); }
+.cold { background: #121a24; border-left: 3px solid var(--amber); padding: 8px 12px; font: 14px Consolas, monospace; }
+#attending .face { background: #3c2d1e url('/art/fellow.png') center/cover; }
+#grid { grid-template-rows: 100%; }
+#centre { min-height: 0; overflow: hidden; }
+#stage svg#body { position: absolute; inset: 0; }

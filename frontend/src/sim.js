@@ -41,6 +41,13 @@ export class Body {
     this.problems.set(site, p);
   }
 
+  // a treatment that helps: knock severity down and slow the decline
+  heal(site, factor = 0.5) {
+    const p = this.problems.get(site); if (!p) return;
+    p.severity *= factor; p.rate *= 0.4;
+    if (p.severity < 0.03 && !p.root) this.problems.delete(site);
+  }
+
   totalSeverity() { let s = 0; for (const p of this.problems.values()) s += p.severity; return s; }
 
   tick(dt, t) {
