@@ -62,6 +62,7 @@ export class Body {
       const w = W[site] || {};
       for (const k in w) target[k] += w[k] * p.severity;
     }
+    if (this.arrest) { target.hr = 0; target.sys = 0; target.spo2 = 55; target.rr = 0; }
     target.dia = target.sys * 0.64;
     target.spo2 = Math.min(100, target.spo2);
     const n = (a) => (Math.random() - 0.5) * a;
@@ -72,13 +73,14 @@ export class Body {
     this.v.spo2 += (target.spo2 + n(0.6) - this.v.spo2) * s;
     this.v.temp += (target.temp - this.v.temp) * s * 0.5;
     this.v.rr += (target.rr + n(1) - this.v.rr) * s;
-    const crit = this.v.spo2 < 80 || this.v.sys < 72 || this.v.hr > 172 || this.v.temp > 41.2 || this.totalSeverity() > 4.8;
+    const crit = this.arrest || this.v.spo2 < 80 || this.v.sys < 72 || this.v.hr > 172 || this.v.temp > 41.2 || this.totalSeverity() > 4.8;
     this.critTime = crit ? this.critTime + dt : Math.max(0, this.critTime - dt);
-    return this.critTime > 20; // true = the patient codes (game over): 20 s of critical vitals
+    return this.critTime > (this.arrest ? 30 : 20); // game over: 20 s critical, or 30 s of untreated arrest
   }
 
   status() {
     const v = this.v;
+    if (this.arrest) return 'CARDIAC ARREST';
     if (this.critTime > 0) return 'CRITICAL';
     if (v.spo2 < 90 || v.sys < 90 || v.hr > 125 || v.temp > 38.6) return 'DETERIORATING';
     if (this.problems.size === 0) return 'STABLE';

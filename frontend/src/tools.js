@@ -26,9 +26,9 @@ export const ACTIONS = {
 
 export function guessKind(name) {
   const n = (name || '').toLowerCase();
-  if (/defib|shock|cardiover/.test(n)) return 'defibrillator';
+  if (/defib|shock|cardiover|paddle/.test(n)) return 'defibrillator';
   if (/cpr|compress/.test(n)) return 'cpr';
-  if (/surg|incis|excis|drain|ectomy|otomy|laparo|scalpel|decompress/.test(n)) return 'surgery';
+  if (/surg|incis|excis|drain|ectomy|otomy|laparo|scalpel|decompress|\bcut\b|operat/.test(n)) return 'surgery';
   if (/oxygen|o2|mask|ventil|cpap|intubat/.test(n)) return 'oxygen';
   if (/fluid|drip|saline|transfus|infusion|\biv\b/.test(n)) return 'iv_drip';
   if (/tablet|oral|pill|capsule|by mouth/.test(n)) return 'oral';

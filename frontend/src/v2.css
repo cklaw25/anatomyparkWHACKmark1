@@ -121,3 +121,8 @@ body.chat-open #chat { transform: none; }
 #stage svg#body { position: absolute; inset: 0; }
 
 #offline-banner { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); background: #5a0f0f; color: #fff; border: 2px solid var(--red); border-radius: 8px; padding: 8px 14px; font: 13px Consolas, monospace; z-index: 50; max-width: 90vw; }
+#own { display: flex; gap: 6px; margin-top: 6px; }
+#own-in { flex: 1; background: #0e141e; color: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: 13px Consolas, monospace; }
+#own select { background: #0e141e; color: var(--white); border: 1px solid var(--line); border-radius: 6px; }
+#own-btn { background: #6a1e1e; color: #fff; border: 1px solid var(--red); border-radius: 6px; padding: 0 12px; font: 600 12px Bahnschrift, sans-serif; cursor: pointer; }
+#vit-status.CARDIAC { color: #fff; background: var(--red); border-color: var(--red); animation: pulse .6s infinite; }

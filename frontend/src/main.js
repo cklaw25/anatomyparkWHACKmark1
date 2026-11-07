@@ -7,7 +7,7 @@ import { Body } from './sim.js';
 import FALLBACK from './cases.json';
 
 const API = import.meta.env.VITE_API || 'http://localhost:8010';
-const FELLOW = { name: 'Dr. Vance', full: 'Dr. Rhys Vance', role: 'Neurology fellow · on the pager' };
+const FELLOW = { name: 'Dr. Foreman', full: 'Dr. Foreman', role: 'Neurologist · on the pager' };
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const post = (path, data) => fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json());
@@ -175,7 +175,7 @@ function renderVitals() {
   const st = body.status(); $('vit-status').textContent = st; $('vit-status').className = st;
 }
 
-const ecg = $('ecg').getContext('2d'); let ecgX = 0, beatPhase = 0, lastY = 40;
+const ecg = $('ecg').getContext('2d'); let ecgX = 0, beatPhase = 0, lastY = 40, vfPhase = 0;
 function drawEcg(dt) {
   if (paused()) return;
   beatPhase += dt * (body.v.hr / 60);
@@ -183,6 +183,7 @@ function drawEcg(dt) {
     ecgX = (ecgX + 1) % 440; const ph = beatPhase % 1; let y = 40;
     if (ph > 0.30 && ph < 0.34) y = 34; else if (ph > 0.36 && ph < 0.39) y = 66; else if (ph > 0.39 && ph < 0.43) y = 8; else if (ph > 0.43 && ph < 0.47) y = 50;
     else if (ph > 0.62 && ph < 0.72) y = 40 - 7 * Math.sin((ph - 0.62) / 0.1 * Math.PI);
+    if (body.arrest) { vfPhase += 0.35 + Math.random() * 0.2; y = 40 + Math.sin(vfPhase) * (14 + Math.random() * 10); }
     ecg.fillStyle = '#06100a'; ecg.fillRect(ecgX, 0, 12, 80);
     ecg.strokeStyle = body.status() === 'CRITICAL' ? '#ff4646' : '#5ae68c'; ecg.lineWidth = 2;
     ecg.beginPath(); ecg.moveTo(ecgX - 1, lastY); ecg.lineTo(ecgX, y); ecg.stroke(); lastY = y;
@@ -272,6 +273,11 @@ async function sendChat() {
     if (j.ok) reply = j.reply;
   } catch { /* offline */ }
   if (!reply) reply = offlineFellow();
+  const want = text.match(/\b(?:i(?:'m| am)? (?:want to|wanna|will|'ll|gonna|going to)|let me|give (?:him|her|them|the patient)?)\s+(?:give\s+)?(?:him |her |them )?(.{3,60}?)(?:[.!?\n]|$)/i);
+  if (want && !reply.treatments.some(x => want[1].toLowerCase().includes(x.name.toLowerCase().split(' ')[0]))) {
+    const n = want[1].replace(/^(a|an|some|the)\s+/i, '').trim();
+    reply.treatments.push({ name: n.charAt(0).toUpperCase() + n.slice(1), detail: 'your call, against advice', kind: guessKind(n), target_site: 'heart', treats: 'lead\'s own decision', risk: 'nobody suggested this' });
+  }
   chatBusy = false; chat.push({ role: 'fellow', reply }); renderChat();
   speak(reply.say);
   for (const tr of reply.treatments) fetchArt(tr);          // start drawing the items before you even click PREPARE
@@ -393,7 +399,10 @@ async function administer(tr, where) {
   } catch { /* offline */ }
   if (!res) res = offlineOutcome(tr);
   // apply the outcome to OUR simulation
-  if (res.outcome === 'cured') body.stabilising = true;
+  const wasArrest = body.arrest;
+  if (res.outcome === 'lethal') { body.arrest = true; body.stabilising = false; body.add('heart', 'Cardiac arrest', 1, false); visuals.push({ type: 'unconscious', site: 'brain', side: 'none', symSite: 'heart' }, { type: 'cyanosis', site: 'lungs', side: 'none', symSite: 'heart' }); }
+  if (wasArrest && (res.outcome === 'improving' || res.outcome === 'cured')) { body.arrest = false; body.critTime = 0; body.heal('heart', 0.3); }
+  if (res.outcome === 'cured' && !body.arrest) body.stabilising = true;
   for (const s of res.resolve_sites || []) body.heal(s, res.outcome === 'improving' ? 0.45 : res.outcome === 'cured' ? 0.3 : 0.8);
   const k = res.outcome === 'much_worse' ? 0.7 : 0.5;
   for (const s of res.new_symptoms || []) {
@@ -403,7 +412,7 @@ async function administer(tr, where) {
   }
   findings.push(...(res.new_findings || []).filter(f => SITES[f.site]));
   treatHistory.push({ name: tr.name, outcome: res.outcome, narration: res.narration, physiology: res.physiology });
-  record(res.outcome === 'worse' || res.outcome === 'much_worse' ? 'cascade' : 'result', `${tr.name}: ${res.outcome.toUpperCase()}. ${res.narration} (${res.physiology})`);
+  record(/worse|lethal/.test(res.outcome) ? 'cascade' : 'result', `${tr.name}: ${res.outcome.toUpperCase()}. ${res.narration} (${res.physiology})`);
   renderLog(); lastSig = ''; drawDynamic();
   showOutcome(tr, res);
   busy = false; document.body.classList.remove('busy');
@@ -417,12 +426,13 @@ function offlineOutcome(tr) {
 }
 
 function showOutcome(tr, res) {
-  const el = $('outcome'), good = res.outcome === 'cured' || res.outcome === 'improving', bad = res.outcome === 'worse' || res.outcome === 'much_worse';
+  const el = $('outcome'), good = res.outcome === 'cured' || res.outcome === 'improving', bad = /worse|lethal/.test(res.outcome);
   el.className = 'show ' + (good ? 'good' : bad ? 'bad' : 'meh');
   el.innerHTML = `<div class="big">${res.outcome.replace('_', ' ').toUpperCase()}</div><div>${esc(res.narration)}</div><small>${esc(res.physiology)}</small>
     ${res.new_symptoms?.length ? `<div class="new">NEW: ${res.new_symptoms.map(s => esc(s.text)).join(' · ')}</div>` : ''}`;
   setTimeout(() => el.className = '', 7000);
-  say(bad ? `${res.narration} Page me. Now.` : res.narration, true);
+  if (res.outcome === 'lethal') say(`${C.patient.name} is in arrest! You have about thirty seconds. Shock or compress, NOW.`, true);
+  else say(bad ? `${res.narration} Page me. Now.` : res.narration, true);
 }
 
 // ---------------- the end: incident post-mortem ----------------
@@ -436,7 +446,7 @@ function end(won) {
       <h1>${won ? 'RESOLVED' : 'FATAL'}: INCIDENT POST-MORTEM</h1>
       <p class="tag">${esc(C.patient.name)}, ${C.patient.age} · ${esc(C.patient.background)}</p>
       <p><b>Root cause:</b> ${esc(C.root_cause)}</p><p>${esc(C.post_mortem)}</p>
-      <p><b>Time to ${won ? 'resolution' : 'death'}:</b> ${Math.round(t)} min · <b>Exams + scans:</b> ${evidence.length} · <b>Key clues:</b> ${keyFound}/${keyTotal} · <b>Treatments:</b> ${treatHistory.length} (${treatHistory.filter(h => /worse/.test(h.outcome)).length} made it worse)</p>
+      <p><b>Time to ${won ? 'resolution' : 'death'}:</b> ${Math.round(t)} min · <b>Exams + scans:</b> ${evidence.length} · <b>Key clues:</b> ${keyFound}/${keyTotal} · <b>Treatments:</b> ${treatHistory.length} (${treatHistory.filter(h => /worse|lethal/.test(h.outcome)).length} made it worse)</p>
       <h3>Incident timeline</h3>
       <div class="tl">${log.map(l => `<div><span class="t">${l.t}</span> ${l.kind === 'cascade' ? '<b style="color:#ff6b6b">CASCADE</b> ' : l.kind === 'treat' ? '<b style="color:#ffb43c">TREAT</b> ' : l.kind === 'chat' ? '<b style="color:#5adcff">PAGE</b> ' : ''}${esc(l.text)}</div>`).join('')}</div>
       <button onclick="location.reload()">NEXT PATIENT</button></div>`;
@@ -507,6 +517,9 @@ window.addEventListener('keydown', (e) => {
 (async () => {
   $('fellow-name').textContent = FELLOW.full; $('fellow-role').textContent = FELLOW.role; $('page-btn').textContent = `PAGE ${FELLOW.name.toUpperCase()} [TAB]`;
   $('page-btn').onclick = () => openChat();
+  const own = () => { const n = $('own-in').value.trim(); if (!n) return; $('own-in').value = '';
+    prepare({ name: n, detail: 'your call', kind: $('own-kind').value === 'auto' ? guessKind(n) : $('own-kind').value, target_site: 'heart', treats: 'lead\'s own decision', risk: 'unknown: nobody suggested this' }); };
+  $('own-btn').onclick = own; $('own-in').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') own(); });
   $('chat-close').onclick = closeChat; $('chat-send').onclick = sendChat;
   $('chat-in').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
   $('paste-notes').onclick = () => { const lines = evidence.slice(sharedUpTo).map(evLine); sharedUpTo = evidence.length; $('chat-in').value += (($('chat-in').value ? '\n' : '') + lines.join('\n')); renderChat(); $('chat-in').focus(); };
