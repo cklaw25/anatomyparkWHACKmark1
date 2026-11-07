@@ -273,7 +273,7 @@ async function sendChat() {
     if (j.ok) reply = j.reply;
   } catch { /* offline */ }
   if (!reply) reply = offlineFellow();
-  const want = text.match(/\b(?:i(?:'m| am)? (?:want to|wanna|will|'ll|gonna|going to)|let me|give (?:him|her|them|the patient)?)\s+(?:give\s+)?(?:him |her |them )?(.{3,60}?)(?:[.!?\n]|$)/i);
+  const want = text.match(/\b(?:i(?:'?m| am)? (?:want to|wanna|will|'ll|gonna|going to)|let me|give (?:him|her|them|the patient)?)\s+(?:give\s+)?(?:him |her |them )?(.{3,60}?)(?:[.!?\n]|$)/i);
   if (want && !reply.treatments.some(x => want[1].toLowerCase().includes(x.name.toLowerCase().split(' ')[0]))) {
     const n = want[1].replace(/^(a|an|some|the)\s+/i, '').trim();
     reply.treatments.push({ name: n.charAt(0).toUpperCase() + n.slice(1), detail: 'your call, against advice', kind: guessKind(n), target_site: 'heart', treats: 'lead\'s own decision', risk: 'nobody suggested this' });
