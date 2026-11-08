@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/src/v2.css" />
   <link rel="stylesheet" href="/src/clinical.css" />
   <link rel="stylesheet" href="/src/fusion.css" />
+  <link rel="stylesheet" href="/src/focus.css" />
 </head>
 <body>
   <header id="top">
@@ -17,28 +18,29 @@
   </header>
   <main id="grid">
     <aside id="left">
-      <section class="panel"><h3>View · keys 1-7</h3><div id="modes"></div></section>
       <section class="panel"><h3>Patient chart</h3><p id="chart-bg" class="chart-bg"></p><h3>Today</h3><ul id="day"></ul></section>
     </aside>
     <section id="centre">
+      <div id="topstrip"><div id="modes"></div><button id="chart-btn" title="Patient chart and today's timeline">CHART</button></div>
       <div id="scan-title"></div>
       <div id="scan-hint"></div>
       <div id="stage">
         <svg id="body" viewBox="0 0 600 880" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="outcome"></div>
+        <div id="tray-wrap" hidden><div id="tray"></div></div>
+        <div id="own"><input id="own-in" placeholder="Your call: any treatment, e.g. defibrillate, 1 mg adrenaline, insulin"/><select id="own-kind"><option value="auto">auto</option><option value="injection">syringe</option><option value="iv_drip">IV bag</option><option value="oral">pill</option><option value="defibrillator">defib</option><option value="cpr">CPR</option><option value="surgery">scalpel</option><option value="oxygen">mask</option><option value="apply">apply</option></select><button id="own-btn">GET IT</button></div>
       </div>
-      <div id="tray-wrap"><div class="cap">IN YOUR HANDS · drag onto the patient</div><div id="tray"></div>
-        <div id="own"><input id="own-in" placeholder="Your call: any treatment, e.g. defibrillate, 1 mg adrenaline, insulin"/><select id="own-kind"><option value="auto">auto</option><option value="injection">syringe</option><option value="iv_drip">IV bag</option><option value="oral">pill</option><option value="defibrillator">defib</option><option value="cpr">CPR</option><option value="surgery">scalpel</option><option value="oxygen">mask</option><option value="apply">apply</option></select><button id="own-btn">GET IT</button></div></div>
       <div id="attending">
         <div class="face">EF</div>
         <div class="pager-text"><b id="fellow-name">DR</b> <span class="live">PAGER</span><div id="att-text">...</div></div>
+        <button id="own-toggle">TRY SOMETHING ELSE</button>
         <button id="page-btn">PAGE [TAB]</button>
       </div>
     </section>
     <aside id="right">
       <section class="panel vit"><h3>Monitor <span id="vit-status"></span></h3><canvas id="ecg" width="440" height="80"></canvas><div id="vitals"></div></section>
-      <section class="panel"><h3>Notes · click to tell Foreman</h3><ul id="evidence"></ul></section>
-      <section class="panel cascade"><h3>Treatments given</h3><div id="cascade" class="dim"></div></section>
+      <section class="panel" id="notes-panel" hidden><h3>Notes · click to tell Foreman</h3><ul id="evidence"></ul></section>
+      <section class="panel cascade" id="treat-panel" hidden><h3>Treatments given</h3><div id="cascade" class="dim"></div></section>
     </aside>
   </main>
 

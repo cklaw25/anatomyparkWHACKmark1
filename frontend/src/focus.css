@@ -1,0 +1,51 @@
+/* design-focus: one thing to look at. The patient is the brightest object; panels appear only when they hold something;
+   glow is reserved for values that are actually wrong. */
+[hidden] { display: none !important; }
+#grid { grid-template-columns: 1fr 360px; }
+
+/* scan switcher: one strip above the patient */
+#topstrip { display: flex; align-items: stretch; gap: 8px; margin-bottom: 8px; }
+#modes { display: flex; flex: 1; min-width: 0; gap: 2px; }
+#modes button { flex: 1; width: auto; min-width: 0; justify-content: center; gap: 6px; margin: 0; padding: 8px 4px; font-size: 12px; letter-spacing: 1px; white-space: nowrap; background: var(--panel); }
+#modes button .dot { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 2px; opacity: .5; box-shadow: none; }
+#modes button.active { background: linear-gradient(0deg, color-mix(in srgb, var(--c) 26%, transparent), transparent 90%); }
+#modes button.active .dot { opacity: 1; }
+#modes .n { font: 600 10px "Bahnschrift", sans-serif; font-style: normal; color: #0a0f16; background: var(--c); padding: 0 4px; border-radius: 2px; }
+#chart-btn { background: var(--panel); color: var(--white); border: 1px solid var(--line2); border-radius: 2px; padding: 0 16px; font: 600 12px "Bahnschrift", sans-serif; letter-spacing: 1.5px; cursor: pointer; }
+#chart-btn:hover { border-color: var(--white); }
+#chart-btn.flash { color: #120c02; background: var(--amber); border-color: var(--amber); animation: chartflash 1s infinite; }
+@keyframes chartflash { 50% { background: var(--panel); color: var(--amber); } }
+
+/* patient chart: a drawer that comes out when asked for */
+#left { position: fixed; left: 0; top: 48px; bottom: 0; width: 300px; z-index: 7; transform: translateX(-102%); transition: transform .15s ease-out; background: var(--panel); border-right: 1px solid var(--line2); }
+#left.open { transform: none; }
+
+/* helper line: gone after the first click in each kind of view, without moving anything */
+#scan-hint { position: absolute; top: 47px; right: 14px; }
+body[data-v="out"].h-out #scan-hint, body[data-v="scan"].h-scan #scan-hint { display: none; }
+
+/* what's in your hands sits beside the patient; there is no second bottom bar */
+#tray-wrap { position: absolute; left: 10px; top: 10px; width: 240px; margin: 0; padding: 0; border: 0; background: none; z-index: 2; }
+#tray { flex-direction: column; align-items: stretch; min-height: 0; gap: 8px; }
+#tray .item { max-width: none; background: var(--panel); }
+#own { display: none; position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); width: min(600px, 92%); margin: 0; padding: 8px; background: var(--panel); border: 1px solid var(--cyan); border-radius: 2px; z-index: 4; }
+#own.open { display: flex; }
+#own-toggle { background: none; color: var(--white); border: 1px solid var(--line2); border-radius: 2px; padding: 10px 14px; font: 600 13px "Bahnschrift", sans-serif; letter-spacing: 1px; cursor: pointer; white-space: nowrap; }
+#own-toggle:hover { border-color: var(--white); }
+
+/* calm by default: glow only means something is wrong */
+.brand { text-shadow: none; }
+#scan-title span { text-shadow: none; }
+#page-btn, .prep { box-shadow: none; }
+#attending { box-shadow: none; border-top: 1px solid var(--line2); }
+#vit-status.STABLE { box-shadow: none; }
+#ecg { filter: none; }
+.panel.vit:has(#vit-status.CRITICAL) #ecg, .panel.vit:has(#vit-status.CARDIAC) #ecg { filter: drop-shadow(0 0 4px #ff3d55); }
+.vital:nth-child(n) span { color: #aebccb; text-shadow: none; }
+.vital:nth-child(n) small { color: var(--dim); }
+.vital.warn:nth-child(n) span { color: #ffc861 !important; text-shadow: 0 0 12px #ffb02e99; }
+.vital.bad:nth-child(n) span { color: #ff5a70 !important; text-shadow: 0 0 14px #ff3d55cc; }
+.vital.warn:nth-child(n) small { color: #ffc861; } .vital.bad:nth-child(n) small { color: #ff5a70; }
+
+/* the nanobot is drawn over the site it's parked on and must not swallow clicks meant for that site */
+#bot, #bot-glow, #bot-art, .scanline { pointer-events: none; }

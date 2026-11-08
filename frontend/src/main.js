@@ -77,14 +77,15 @@ function activeEffects() {
 function renderModes() {
   $('modes').innerHTML = MODES.map((m, i) => {
     const n = evidence.filter(e => e.system === m.id && !e.normal).length;
-    return `<button data-mode="${m.id}" class="${m.id === mode ? 'active' : ''}" style="--c:${m.color}">
-      <span class="dot" style="background:${m.color}"></span><span>${m.label}<small>[${i + 1}] ${n ? n + ' abnormal' : m.id === 'outside' ? 'look at the patient' : 'scan'}</small></span></button>`;
+    return `<button data-mode="${m.id}" class="${m.id === mode ? 'active' : ''}" style="--c:${m.color}" title="Key ${i + 1}">
+      <span class="dot" style="background:${m.color}"></span><span>${m.id === 'outside' ? 'BEDSIDE' : m.label}</span>${n ? `<i class="n">${n}</i>` : ''}</button>`;
   }).join('');
   document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
 }
 
 function setMode(m) {
   mode = m; const md = MODES.find(x => x.id === m);
+  document.body.dataset.v = m === 'outside' ? 'out' : 'scan';
   $('scan-title').innerHTML = `<span style="color:${md.color}">${m === 'outside' ? 'BEDSIDE · WHAT YOU SEE' : md.label + ' SCAN'}</span>`;
   $('scan-hint').textContent = m === 'outside' ? 'Click a body part to examine it · drag prepared treatments onto the patient' : 'Click a site: the nanobot travels there and runs the test';
   $('body').style.setProperty('--tint', m === 'outside' ? '#1d2a3a' : md.color + '30');
@@ -143,10 +144,13 @@ function drawDynamic() {
   drawAction();
 }
 
+let chartSeen = -1;
 function renderDay() {
   const items = (C.day_events || []).map(e => ({ ...e }));
   if (onset) items.push({ time: C._onsetClock, text: 'COLLAPSED: ' + C.initial_symptoms.map(s => s.text).join(', '), bad: true });
   $('chart-bg').textContent = C.patient.background;
+  if (chartSeen >= 0 && items.length > chartSeen && !$('left').classList.contains('open')) $('chart-btn').classList.add('flash');
+  chartSeen = items.length;
   $('day').innerHTML = items.map(e => `<li class="${e.bad ? 'bad' : ''}"><span class="t">${esc(e.time)}</span>${esc(e.text)}</li>`).join('');
 }
 
@@ -154,6 +158,7 @@ function renderEvidence() {
   $('evidence').innerHTML = evidence.length ? evidence.map((e, i) => `<li class="${e.key ? 'key' : e.normal ? 'normal' : ''}" data-i="${i}" title="click: tell ${FELLOW.name}">
       ${esc(SITES[e.site].label)} · ${e.system === 'outside' ? 'seen' : esc(e.system)}: ${esc(e.result)} <span class="tell">＋</span></li>`).join('')
     : '<li class="dim">Examine the patient and run scans. Click any line to tell the fellow.</li>';
+  $('notes-panel').hidden = !evidence.length;
   document.querySelectorAll('#evidence li[data-i]').forEach(li => li.onclick = () => { const e = evidence[+li.dataset.i]; openChat(evLine(e)); });
   renderModes();
 }
@@ -162,6 +167,7 @@ const evLine = (e) => `${SITES[e.site].label} (${e.system === 'outside' ? 'on ex
 function renderLog() {
   $('cascade').innerHTML = treatHistory.length ? treatHistory.map(h => `<div class="o-${h.outcome}"><b>${esc(h.name)}</b> → <span class="oc">${h.outcome.replace('_', ' ').toUpperCase()}</span><br><span class="dim">${esc(h.narration)}</span></div>`).join('')
     : '<span class="dim">Nothing given yet.</span>';
+  $('treat-panel').hidden = !treatHistory.length;
 }
 
 const VITALS = [
@@ -187,7 +193,7 @@ function drawEcg(dt) {
     else if (ph > 0.62 && ph < 0.72) y = 40 - 7 * Math.sin((ph - 0.62) / 0.1 * Math.PI);
     if (body.arrest) { vfPhase += 0.35 + Math.random() * 0.2; y = 40 + Math.sin(vfPhase) * (14 + Math.random() * 10); }
     ecg.fillStyle = '#04090d'; ecg.fillRect(ecgX, 0, 12, 80);
-    ecg.strokeStyle = body.status() === 'CRITICAL' ? '#ff3d55' : '#3dff9a'; ecg.lineWidth = 2;
+    ecg.strokeStyle = body.status() === 'CRITICAL' ? '#ff3d55' : '#5fae85'; ecg.lineWidth = 2;
     ecg.beginPath(); ecg.moveTo(ecgX - 1, lastY); ecg.lineTo(ecgX, y); ecg.stroke(); lastY = y;
   }
 }
@@ -312,6 +318,7 @@ function prepare(tr) {
   fetchArt(item.tr).then(svg => { if (svg) { item.svg = svg; renderTray(); } });
 }
 function renderTray() {
+  $('tray-wrap').hidden = !tray.length;
   $('tray').innerHTML = tray.length ? tray.map(it => `<div class="item" data-id="${it.id}" title="drag onto the patient">
       <div class="ic">${it.svg || ICONS[it.tr.kind]}</div><div><b>${esc(it.tr.name)}</b><small>${esc(ACTIONS[it.tr.kind].hint || 'drag onto the patient')}${it.svg ? '' : ' · drawing…'}</small></div>
       <span class="x" data-x="${it.id}">x</span></div>`).join('')
@@ -527,8 +534,11 @@ window.addEventListener('keydown', (e) => {
   $('fellow-name').textContent = FELLOW.full; $('fellow-role').textContent = FELLOW.role; $('page-btn').textContent = `PAGE ${FELLOW.name.toUpperCase()} [TAB]`;
   $('page-btn').onclick = () => openChat();
   const own = () => { const n = $('own-in').value.trim(); if (!n) return; $('own-in').value = '';
-    prepare({ name: n, detail: 'your call', kind: $('own-kind').value === 'auto' ? guessKind(n) : $('own-kind').value, target_site: 'heart', treats: 'lead\'s own decision', risk: 'unknown: nobody suggested this' }); };
-  $('own-btn').onclick = own; $('own-in').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') own(); });
+    prepare({ name: n, detail: 'your call', kind: $('own-kind').value === 'auto' ? guessKind(n) : $('own-kind').value, target_site: 'heart', treats: 'lead\'s own decision', risk: 'unknown: nobody suggested this' }); $('own').classList.remove('open'); };
+  $('own-btn').onclick = own; $('own-in').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') own(); if (e.key === 'Escape') $('own').classList.remove('open'); });
+  $('own-toggle').onclick = () => { if ($('own').classList.toggle('open')) $('own-in').focus(); };
+  $('chart-btn').onclick = () => { $('left').classList.toggle('open'); $('chart-btn').classList.remove('flash'); };
+  $('body').addEventListener('pointerdown', () => document.body.classList.add(mode === 'outside' ? 'h-out' : 'h-scan'));
   $('chat-close').onclick = closeChat; $('chat-send').onclick = sendChat;
   $('chat-in').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
   $('paste-notes').onclick = () => { const lines = evidence.slice(sharedUpTo).map(evLine); sharedUpTo = evidence.length; $('chat-in').value += (($('chat-in').value ? '\n' : '') + lines.join('\n')); renderChat(); $('chat-in').focus(); };
