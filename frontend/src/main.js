@@ -77,7 +77,7 @@ function activeEffects() {
 function renderModes() {
   $('modes').innerHTML = MODES.map((m, i) => {
     const n = evidence.filter(e => e.system === m.id && !e.normal).length;
-    return `<button data-mode="${m.id}" class="${m.id === mode ? 'active' : ''}" style="${m.id === mode ? `border-color:${m.color}` : ''}">
+    return `<button data-mode="${m.id}" class="${m.id === mode ? 'active' : ''}" style="--c:${m.color}">
       <span class="dot" style="background:${m.color}"></span><span>${m.label}<small>[${i + 1}] ${n ? n + ' abnormal' : m.id === 'outside' ? 'look at the patient' : 'scan'}</small></span></button>`;
   }).join('');
   document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
@@ -98,12 +98,12 @@ function drawStatic() {
     $('body').innerHTML = `<g id="pt"></g><g id="dyn"></g><g id="act"></g>`;
     drawPatientNow(true);
   } else {
-    $('body').innerHTML = `${hologram()}<g id="lay">${layer(mode)}</g>
+    $('body').innerHTML = `${hologram(mode)}<g id="lay">${layer(mode)}</g>
       <image href="/art/body_${mode}.png" x="0" y="0" width="600" height="880" preserveAspectRatio="xMidYMid meet"
         onload="document.getElementById('holo').style.display='none';document.getElementById('lay').style.display='none'" onerror="this.remove()"/>
       <g id="dyn"></g>
       <rect class="scanline" x="0" y="0" width="600" height="6" fill="${md.color}" opacity=".8"/>
-      <circle id="bot-glow" r="20" fill="#c9d1d8" opacity=".35"/><circle id="bot" r="9" fill="#c9d1d8" stroke="#fff" stroke-width="2"/>
+      <circle id="bot-glow" r="20" fill="#4fe3ff" opacity=".35"/><circle id="bot" r="9" fill="#4fe3ff" stroke="#fff" stroke-width="2"/>
       <image id="bot-art" href="/art/nanobot.png" width="44" height="44" onload="document.getElementById('bot').style.display='none'" onerror="this.remove()"/>
       <g id="act"></g>`;
   }
@@ -129,15 +129,15 @@ function drawDynamic() {
     if (clueHere) h += `<text x="${s.x - 6}" y="${s.y + 5}" style="font:bold 15px Consolas;fill:#ffd24a;paint-order:stroke;stroke:#000;stroke-width:3px">?</text>`;
     if (p && p.severity > 0.02 && onset) h += `<circle class="glow" cx="${s.x}" cy="${s.y}" r="${16 + 30 * p.severity}" fill="#ff3030" opacity=".6"/>`;
     h += `<g class="site" data-site="${id}"><circle cx="${s.x}" cy="${s.y}" r="18" fill="transparent"/>
-      <circle class="ring" cx="${s.x}" cy="${s.y}" r="${bright ? 11 : 7}" stroke="${tested ? '#5aa56e' : bright ? md.color : '#506070'}"/>
+      <circle class="ring" cx="${s.x}" cy="${s.y}" r="${bright ? 11 : 7}" stroke="${tested ? '#3dff9a' : bright ? md.color : '#506070'}"/>
       ${bright || p ? `<text x="${s.x + 15}" y="${s.y - 10}">${SITES[id].label}</text>` : ''}</g>`;
   } else if (!action) for (const [id, s] of Object.entries(SITES)) {
     const seen = evidence.some(e => e.site === id && e.system === 'outside');
     h += `<g class="site exam" data-site="${id}"><circle cx="${s.x}" cy="${s.y}" r="22" fill="transparent"/>
-      <circle class="ring" cx="${s.x}" cy="${s.y}" r="5" stroke="${seen ? '#5aa56e' : '#ffffff55'}"/></g>`;
+      <circle class="ring" cx="${s.x}" cy="${s.y}" r="5" stroke="${seen ? '#3dff9a' : '#ffffff55'}"/></g>`;
   }
-  if (testing) h += `<circle cx="${SITES[testing.site].x}" cy="${SITES[testing.site].y}" r="${10 + (testing.p * 40) % 40}" fill="none" stroke="#c9d1d8" stroke-width="3" opacity="${1 - (testing.p * 40 % 40) / 40}"/>
-      <text x="${SITES[testing.site].x - 40}" y="${SITES[testing.site].y + 34}" style="font:13px Consolas;fill:#c9d1d8">SCANNING…</text>`;
+  if (testing) h += `<circle cx="${SITES[testing.site].x}" cy="${SITES[testing.site].y}" r="${10 + (testing.p * 40) % 40}" fill="none" stroke="#4fe3ff" stroke-width="3" opacity="${1 - (testing.p * 40 % 40) / 40}"/>
+      <text x="${SITES[testing.site].x - 40}" y="${SITES[testing.site].y + 34}" style="font:13px Consolas;fill:#4fe3ff">SCANNING…</text>`;
   if ($('dyn')) $('dyn').innerHTML = h;
   document.querySelectorAll('#dyn .site').forEach(g => g.onclick = () => mode === 'outside' ? examine(g.dataset.site) : goTest(g.dataset.site));
   drawAction();
@@ -186,8 +186,8 @@ function drawEcg(dt) {
     if (ph > 0.30 && ph < 0.34) y = 34; else if (ph > 0.36 && ph < 0.39) y = 66; else if (ph > 0.39 && ph < 0.43) y = 8; else if (ph > 0.43 && ph < 0.47) y = 50;
     else if (ph > 0.62 && ph < 0.72) y = 40 - 7 * Math.sin((ph - 0.62) / 0.1 * Math.PI);
     if (body.arrest) { vfPhase += 0.35 + Math.random() * 0.2; y = 40 + Math.sin(vfPhase) * (14 + Math.random() * 10); }
-    ecg.fillStyle = '#0b0c0d'; ecg.fillRect(ecgX, 0, 12, 80);
-    ecg.strokeStyle = body.status() === 'CRITICAL' ? '#d4473f' : '#5fbf72'; ecg.lineWidth = 2;
+    ecg.fillStyle = '#04090d'; ecg.fillRect(ecgX, 0, 12, 80);
+    ecg.strokeStyle = body.status() === 'CRITICAL' ? '#ff3d55' : '#3dff9a'; ecg.lineWidth = 2;
     ecg.beginPath(); ecg.moveTo(ecgX - 1, lastY); ecg.lineTo(ecgX, y); ecg.stroke(); lastY = y;
   }
 }
@@ -379,7 +379,7 @@ function drawAction() {
     ${a.cfg.cut ? `<line x1="${a.x - 45}" y1="${a.y}" x2="${a.x + 45}" y2="${a.y}" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5"/>
       <line x1="${a.x - 45}" y1="${a.y}" x2="${a.x - 45 + 90 * Math.min(1, prog)}" y2="${a.y}" stroke="#c0101a" stroke-width="4"/>` : ''}
     <circle cx="${a.x}" cy="${a.y}" r="${R}" fill="#00000066" stroke="#ffffff33" stroke-width="6"/>
-    <circle cx="${a.x}" cy="${a.y}" r="${R}" fill="none" stroke="${a.charged ? '#ff4a3c' : '#c9d1d8'}" stroke-width="6" stroke-dasharray="${circ * Math.min(1, prog)} ${circ}" transform="rotate(-90 ${a.x} ${a.y})"/>
+    <circle cx="${a.x}" cy="${a.y}" r="${R}" fill="none" stroke="${a.charged ? '#ff4a3c' : '#4fe3ff'}" stroke-width="6" stroke-dasharray="${circ * Math.min(1, prog)} ${circ}" transform="rotate(-90 ${a.x} ${a.y})"/>
     <svg x="${a.x - 34}" y="${a.y - 34}" width="68" height="68" viewBox="0 0 120 120">${art.replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>
     <text x="${a.x}" y="${a.y + R + 22}" text-anchor="middle" class="act-label">${esc(label)}${a.cfg.clicks ? ` (${a.clicks}/${a.cfg.clicks})` : ''}</text>
     <text x="${a.x}" y="${a.y + R + 40}" text-anchor="middle" class="act-sub">${esc(a.item.tr.name)} → ${esc(a.where)} · Esc to cancel</text>`;
@@ -457,7 +457,7 @@ function end(won) {
       <p><b>Root cause:</b> ${esc(C.root_cause)}</p><p>${esc(C.post_mortem)}</p>
       <p><b>Time to ${won ? 'resolution' : 'death'}:</b> ${Math.round(t)} min · <b>Exams + scans:</b> ${evidence.length} · <b>Key clues:</b> ${keyFound}/${keyTotal} · <b>Treatments:</b> ${treatHistory.length} (${treatHistory.filter(h => /worse|lethal/.test(h.outcome)).length} made it worse)</p>
       <h3>Incident timeline</h3>
-      <div class="tl">${log.map(l => `<div><span class="t">${l.t}</span> ${l.kind === 'cascade' ? '<b style="color:#d4473f">CASCADE</b> ' : l.kind === 'treat' ? '<b style="color:#d6a03c">TREAT</b> ' : l.kind === 'chat' ? '<b style="color:#c9d1d8">PAGE</b> ' : ''}${esc(l.text)}</div>`).join('')}</div>
+      <div class="tl">${log.map(l => `<div><span class="t">${l.t}</span> ${l.kind === 'cascade' ? '<b style="color:#ff3d55">CASCADE</b> ' : l.kind === 'treat' ? '<b style="color:#ffb02e">TREAT</b> ' : l.kind === 'chat' ? '<b style="color:#4fe3ff">PAGE</b> ' : ''}${esc(l.text)}</div>`).join('')}</div>
       <button onclick="location.reload()">NEXT PATIENT</button></div>`;
     $('overlay').classList.add('show');
   }, 2200);

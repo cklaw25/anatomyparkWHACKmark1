@@ -7,7 +7,6 @@
   --hr: #5fbf72; --bp: #e06a5f; --spo2: #6fb3d6; --rr: #d8c35a; --temp: #dcdfe2;
 }
 html, body { background: var(--bg); font-family: "Bahnschrift", "Segoe UI", Arial, sans-serif; font-variant-numeric: tabular-nums; }
-*, *::before, *::after { box-shadow: none !important; text-shadow: none !important; transition: none; }
 button, input, select, textarea { font-family: inherit !important; }
 
 /* header = the ward system's patient band */
@@ -29,8 +28,6 @@ header#top { height: 48px; background: #0f1113; border-bottom: 1px solid var(--l
 
 /* view switcher: plain list, active = filled row (no rainbow dots) */
 #modes button { border: 0; border-radius: 0; background: none; margin: 0; padding: 7px 8px; font-size: 13px; color: var(--dim); border-left: 2px solid transparent; }
-#modes button .dot { display: none; }
-#modes button.active { background: var(--panel2); color: var(--white); border-width: 0 !important; border-color: transparent !important; outline: 1px solid var(--line2); }
 #modes button:hover { color: var(--white); }
 #modes button small { font: 11px "Bahnschrift", sans-serif; }
 .chart-bg { font: 13px/1.45 "Segoe UI", sans-serif; color: var(--white); }
@@ -43,12 +40,9 @@ header#top { height: 48px; background: #0f1113; border-bottom: 1px solid var(--l
 /* centre: bed space */
 #centre { padding: 10px 14px 12px; background: var(--bg); }
 #scan-title { font-size: 13px; letter-spacing: 1.5px; color: var(--white); }
-#scan-title span { color: var(--white) !important; }
 #scan-hint { font: 12px "Segoe UI", sans-serif; }
 svg#body { background: none !important; }
-#bot-glow { display: none; }
 .site text { font: 12px "Bahnschrift", sans-serif; stroke-width: 0; fill: var(--white); }
-.glow { animation: none; opacity: .8; }
 .fx-label { stroke-width: 2px; }
 
 /* tray + "your call" */
