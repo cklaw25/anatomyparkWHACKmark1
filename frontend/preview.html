@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anatomy Preview</title>
+  <style>
+    html, body { margin: 0; background: #070b12; color: #eaf3fa; font: 14px "Bahnschrift", "Segoe UI", sans-serif; }
+    #g { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: #1b2c3f; }
+    figure { margin: 0; background: #070b12; padding: 10px 12px 4px; }
+    figcaption { letter-spacing: 1.4px; font-size: 13px; }
+    svg { width: 100%; height: auto; display: block; }
+  </style>
+</head>
+<body>
+  <div id="g"></div>
+  <script type="module">
+    import { layer } from '/src/anatomy.js';
+    import { drawPatient, hologram } from '/src/patient.js';
+    const tile = (name, svg, color) => `<figure><figcaption style="color:${color}">${name}</figcaption><svg viewBox="0 0 600 880">${svg}</svg></figure>`;
+    const sick = [['cyanosis', 'lungs', .8], ['bruise', 'kidneys', .9], ['petechiae', 'skin', .9], ['face_droop', 'brain', .8], ['sweating', 'skin', .7]].map(([type, site, k]) => ({ type, site, side: 'none', k }));
+    const modes = [['skeletal', 'X-RAY', '#a8dcff'], ['circulatory', 'ANGIOGRAM', '#ff4a64'], ['respiratory', 'BRONCHOGRAM', '#49dcff'], ['nervous', 'NERVOUS', '#ffb02e'], ['digestive', 'DIGESTIVE', '#ff9a4a'], ['organs', 'ORGANS', '#ff6ac0']];
+    document.getElementById('g').innerHTML =
+      tile('BEDSIDE', drawPatient([], {}), '#eaf3fa') +
+      tile('BEDSIDE, SICK', drawPatient(sick, { room: false }), '#ff3d55') +
+      tile('AMPUTATION TEST', drawPatient([], { room: false, mods: [{ change: 'amputate', part: 'left_arm', t: 0 }, { change: 'amputate', part: 'right_leg', t: 0 }] }), '#ffb02e') +
+      modes.map(([m, n, c]) => tile(n, hologram(m) + layer(m), c)).join('');
+  </script>
+</body>
+</html>

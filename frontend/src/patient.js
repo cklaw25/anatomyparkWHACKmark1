@@ -10,12 +10,14 @@ const TINTS = { pallor: [236, 226, 214], cyanosis: [150, 160, 200], jaundice: [2
 
 // where an effect shows on the OUTSIDE for each internal site
 const OUT = {
-  brain: [300, 62], thyroid: [300, 150], heart: [322, 262], lungs: [272, 250], liver: [338, 345], stomach: [282, 352],
+  brain: [300, 62], thyroid: [300, 150], heart: [322, 262], lungs: [272, 250], liver: [262, 345], stomach: [340, 352],
   pancreas: [300, 385], kidneys: [368, 410], intestines: [300, 455], bladder: [300, 540], spinal_cord: [300, 300],
   blood: [176, 360], bone_marrow: [336, 650], joints: [190, 440], skin: [414, 360], left_leg: [266, 740], right_leg: [334, 740],
 };
 import { drawMods } from './mods.js';
 import { drawRoom } from './room.js';
+import { BODY, FILTERS, ghost, tintFor, curve } from './realbody.js';
+const both = (x) => x + `<g transform="translate(600 0) scale(-1 1)">${x}</g>`;
 export const MOUTH = { x: 300, y: 114 };
 
 // a few deterministic random numbers so rashes don't flicker
@@ -23,50 +25,79 @@ function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>>
 
 // ---- body shapes (shared by the outside view and the scan-mode hologram) ----
 const P = {
-  legL: 'M246 596 C240 680 246 760 250 826 L276 826 C280 760 290 684 292 600 Z',
-  legR: 'M354 596 C360 680 354 760 350 826 L324 826 C320 760 310 684 308 600 Z',
+  legL: 'M208 596 C212 680 230 730 244 826 L282 826 C288 760 290 684 298 600 Z',
+  legR: 'M392 596 C388 680 370 730 356 826 L318 826 C312 760 310 684 302 600 Z',
   armL: 'M212 172 C188 178 176 204 172 244 L156 460 L180 464 L196 262 C200 232 206 216 216 206 Z',
   armR: 'M388 172 C412 178 424 204 428 244 L444 460 L420 464 L404 262 C400 232 394 216 384 206 Z',
   neck: 'M284 124 L282 168 L318 168 L316 124 Z',
   gown: 'M214 166 Q300 150 386 166 Q406 174 412 196 L418 254 L394 262 L392 300 Q398 450 388 604 Q300 618 212 604 Q202 450 208 300 L206 262 L182 254 L188 196 Q194 174 214 166 Z',
 };
-export function hologram() {
-  return `<g id="holo" fill="#13263a" stroke="#3f6a88" stroke-width="2" opacity=".9">
-    <path d="${P.legL}"/><path d="${P.legR}"/><path d="${P.armL}"/><path d="${P.armR}"/>
-    <ellipse cx="166" cy="482" rx="15" ry="21"/><ellipse cx="434" cy="482" rx="15" ry="21"/>
-    <path d="M206 170 Q300 150 394 170 L398 600 Q300 616 202 600 Z"/><path d="${P.neck}"/>
-    <ellipse cx="300" cy="82" rx="46" ry="56"/><ellipse cx="258" cy="842" rx="20" ry="9"/><ellipse cx="342" cy="842" rx="20" ry="9"/></g>`;
-}
+export const hologram = (mode) => ghost(tintFor(mode));
 
 // active effects -> {type: [{site, side, k}]}
 function group(effects) { const g = {}; for (const e of effects) (g[e.type] ||= []).push(e); return g; }
 const maxK = (arr) => arr ? Math.max(...arr.map(e => e.k)) : 0;
 
-function face(g, skin, lipCol) {
+function face(g, skinC, lipCol, skin) {
+  const tone = (c, k) => rgb(mix(skin, c, k));
+  const sh = tone([104, 54, 50], .5), deep = tone([56, 26, 28], .78), lt = tone([255, 240, 226], .55);
   const droop = g.face_droop?.[0], dk = droop ? droop.k : 0, dl = droop && droop.side === 'right' ? 1 : -1; // -1 = viewer-left side
   const unconscious = maxK(g.unconscious) > 0.25, seizing = maxK(g.seizure) > 0.25, confused = maxK(g.confused) > 0.25;
+  const pain = maxK(g.pain) > 0.5 || seizing;
   const eye = (x, side) => {
     const droopy = droop && side === dl ? dk : 0;
-    if (unconscious) return `<path d="M${x - 9} 82 Q${x} ${87 + droopy * 3} ${x + 9} 82" stroke="#3a2418" stroke-width="2.5" fill="none"/>`;
-    const irisY = seizing ? 74 : 81, irisX = confused ? x + (side < 0 ? -3 : 4) : x;
-    const sclera = g.jaundice ? rgb(mix([250, 250, 245], [236, 210, 90], maxK(g.jaundice))) : '#f8f6f0';
-    return `<ellipse cx="${x}" cy="81" rx="10" ry="6.5" fill="${sclera}" stroke="#3a2418" stroke-width="1.5"/>
-      <circle cx="${irisX}" cy="${irisY}" r="4.2" fill="#4a3020"/><circle cx="${irisX}" cy="${irisY}" r="1.8" fill="#000"/>
-      <circle cx="${irisX + 1.5}" cy="${irisY - 1.5}" r="1" fill="#fff"/>
-      ${droopy > 0.1 ? `<path d="M${x - 11} 76 Q${x} ${74 + droopy * 9} ${x + 11} 76 L${x + 11} 74 L${x - 11} 74 Z" fill="${skin}"/>` : ''}`;
+    const shape = `M${x - 11.5} 82.5 C${x - 7} 76 ${x + 4} 74.5 ${x + 11.5} 82 C${x + 6} 87.5 ${x - 6} 88 ${x - 11.5} 82.5Z`;
+    const lid = `M${x - 12.5} 83 C${x - 7} 74.5 ${x + 4} 73 ${x + 12.5} 82.5 C${x + 4} 76.5 ${x - 6} 77.5 ${x - 12.5} 83Z`;
+    if (unconscious) return `<path d="M${x - 12} 82 C${x - 6} 88 ${x + 6} 88 ${x + 12} 82 C${x + 6} 78 ${x - 6} 78 ${x - 12} 82Z" fill="${tone([180, 120, 110], .3)}"/>
+      <path d="M${x - 12} 82 Q${x} ${88 + droopy * 3} ${x + 12} 82" stroke="${deep}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+    const irisY = seizing ? 76 : 81.3, irisX = confused ? x + (side < 0 ? -3.2 : 4) : x;
+    const sclera = g.jaundice ? rgb(mix([250, 248, 240], [236, 210, 90], maxK(g.jaundice))) : '#f6f2ea';
+    const id = side < 0 ? 'eyeA' : 'eyeB';
+    return `<clipPath id="${id}"><path d="${shape}"/></clipPath>
+      <path d="M${x - 14} 74 Q${x} 68 ${x + 14} 74" stroke="${sh}" stroke-width="1" fill="none" opacity=".7"/>
+      <path d="${shape}" fill="${sclera}"/>
+      <g clip-path="url(#${id})">
+        <circle cx="${irisX}" cy="${irisY}" r="5.6" fill="url(#irisG)"/><circle cx="${irisX}" cy="${irisY}" r="5.6" fill="none" stroke="#1d120c" stroke-width=".9"/>
+        <circle cx="${irisX}" cy="${irisY}" r="2.3" fill="#050403"/><circle cx="${irisX + 1.8}" cy="${irisY - 1.9}" r="1.2" fill="#fff" opacity=".95"/>
+        <path d="M${x - 12} 76 L${x + 12} 76 L${x + 12} 81 Q${x} 76 ${x - 12} 82Z" fill="#1a0d08" opacity=".32"/>
+        <circle cx="${x + side * 9}" cy="83" r="1.7" fill="#d88a84" opacity=".7"/>
+      </g>
+      <path d="${lid}" fill="#22130d"/>
+      <path d="M${x - 10} 88.5 Q${x} 92 ${x + 10} 88" stroke="${sh}" stroke-width="1" fill="none" opacity=".6"/>
+      ${droopy > 0.1 ? `<path d="M${x - 13} 76 Q${x} ${74 + droopy * 11} ${x + 13} 76 L${x + 13} 72 L${x - 13} 72 Z" fill="${skinC}"/><path d="M${x - 13} 76 Q${x} ${74 + droopy * 11} ${x + 13} 76" stroke="#22130d" stroke-width="1.4" fill="none"/>` : ''}`;
   };
-  const m0 = 300 - 14, m1 = 300 + 14;
-  const yL = 115 + (droop && dl < 0 ? dk * 8 : 0), yR = 115 + (droop && dl > 0 ? dk * 8 : 0);
-  const pain = maxK(g.pain) > 0.5 || seizing;
-  const mouth = pain ? `<path d="M${m0} ${yL} Q300 108 ${m1} ${yR}" stroke="${lipCol}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`
-    : `<path d="M${m0} ${yL} Q300 ${120} ${m1} ${yR}" stroke="${lipCol}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
-  const brows = pain ? 'M272 68 Q282 63 292 70 M308 70 Q318 63 328 68' : 'M271 69 Q282 63 293 67 M307 67 Q318 63 329 69';
+  const brow = (x0, dir) => {
+    const r = rng(x0); let h = '';
+    for (let i = 0; i < 18; i++) { const u = i / 17, x = x0 + dir * u * 25, y = 68.5 - Math.sin(u * 2.7) * 3.6 + (pain ? (1 - u) * 3.4 : 0);
+      h += `<path d="M${x.toFixed(1)} ${(y + 2).toFixed(1)} l${(dir * (2.5 + r() * 2)).toFixed(1)} ${(-2.6 - r() * 2).toFixed(1)}" stroke="#241811" stroke-width="${(.8 + r() * .5).toFixed(2)}" stroke-linecap="round" opacity=".85"/>`; }
+    return h;
+  };
+  const yL = 115 + (droop && dl < 0 ? dk * 8 : 0) + (pain ? 2 : 0), yR = 115 + (droop && dl > 0 ? dk * 8 : 0) + (pain ? 2 : 0), yC = pain ? 113 : 114.5;
+  const upper = `M285 ${yL} C291 ${yC - 3} 295 ${yC - 5} 297 ${yC - 4} Q300 ${yC - 2.4} 303 ${yC - 4} C305 ${yC - 5} 309 ${yC - 3} 315 ${yR} C308 ${yC + 1.8} 292 ${yC + 1.8} 285 ${yL}Z`;
+  const lower = `M286 ${yL + .4} C292 ${yC + 2.2} 308 ${yC + 2.2} 314 ${yR + .4} C310 ${yC + 9} 305 ${yC + 10.5} 300 ${yC + 10.5} C295 ${yC + 10.5} 290 ${yC + 9} 286 ${yL + .4}Z`;
   return `
-    <path d="${brows}" stroke="#2b1d16" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M262 110 C272 128 286 140 300 142 C314 140 328 128 338 110 L352 170 L248 170Z" fill="${deep}" opacity="0" />
+    <g filter="url(#b3)">
+      <ellipse cx="282" cy="79" rx="16" ry="9" fill="${sh}" opacity=".5"/><ellipse cx="318" cy="79" rx="16" ry="9" fill="${sh}" opacity=".5"/>
+      <path d="M293 76 L291 100 M307 76 L309 100" stroke="${sh}" stroke-width="5" opacity=".42" stroke-linecap="round"/>
+      <ellipse cx="271" cy="101" rx="11" ry="7" fill="${lt}" opacity=".6"/><ellipse cx="329" cy="101" rx="11" ry="7" fill="${lt}" opacity=".6"/>
+      <ellipse cx="300" cy="50" rx="27" ry="10" fill="${lt}" opacity=".55"/>
+      <ellipse cx="262" cy="108" rx="5" ry="16" fill="${sh}" opacity=".35"/><ellipse cx="338" cy="108" rx="5" ry="16" fill="${sh}" opacity=".35"/>
+      <ellipse cx="300" cy="126" rx="12" ry="5.5" fill="${lt}" opacity=".5"/>
+      <ellipse cx="300" cy="124" rx="11" ry="2.4" fill="${sh}" opacity=".3"/>
+      <ellipse cx="300" cy="107.5" rx="9" ry="2.6" fill="${sh}" opacity=".55"/>
+      <rect x="298" y="82" width="4.5" height="20" rx="2.2" fill="${lt}" opacity=".8"/>
+      <circle cx="300" cy="100" r="4.5" fill="${lt}" opacity=".7"/>
+      ${g.flushed ? `<ellipse cx="272" cy="101" rx="14" ry="9" fill="#e8413c" opacity="${0.6 * maxK(g.flushed)}"/><ellipse cx="328" cy="101" rx="14" ry="9" fill="#e8413c" opacity="${0.6 * maxK(g.flushed)}"/>` : ''}
+    </g>
+    ${brow(270, 1)}${brow(330, -1)}
     ${eye(282, -1)}${eye(318, 1)}
-    <path d="M300 86 Q296 98 293 101 Q300 105 307 101" stroke="${rgb(mix(BASE_SKIN, [120, 70, 50], 0.6))}" stroke-width="2" fill="none"/>
-    ${mouth}
-    ${g.flushed ? `<ellipse cx="274" cy="100" rx="11" ry="6" fill="#e85a50" opacity="${0.45 * maxK(g.flushed)}"/><ellipse cx="326" cy="100" rx="11" ry="6" fill="#e85a50" opacity="${0.45 * maxK(g.flushed)}"/>` : ''}`;
+    <path d="M290.5 101 C289 106 293 107.5 295 106 M309.5 101 C311 106 307 107.5 305 106" stroke="${sh}" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".9"/>
+    <ellipse cx="295.6" cy="105.4" rx="2.5" ry="1.4" fill="${deep}"/><ellipse cx="304.4" cy="105.4" rx="2.5" ry="1.4" fill="${deep}"/>
+    <path d="M298 109 L297 ${yC - 5} M302 109 L303 ${yC - 5}" stroke="${sh}" stroke-width=".8" opacity=".5"/>
+    <path d="${upper}" fill="${lipCol}"/><path d="${lower}" fill="${lipCol}" opacity=".9"/>
+    <path d="M285 ${yL} C292 ${yC + 2.4} 308 ${yC + 2.4} 315 ${yR}" stroke="${deep}" stroke-width="1.15" fill="none" stroke-linecap="round"/>
+    <ellipse cx="300" cy="${yC + 6}" rx="6" ry="1.5" fill="#fff" opacity=".3" filter="url(#b1)"/>`;
 }
 
 function siteXY(e) {
@@ -132,45 +163,77 @@ export function drawPatient(effects, opts = {}) {
   if (g.confused) fx += `<text x="340" y="40" class="fx-label q">?</text><text x="250" y="34" class="fx-label q" style="animation-delay:.6s">?</text>`;
   if (g.unconscious) fx += `<text x="338" y="44" class="fx-label z">z</text><text x="352" y="28" class="fx-label z" style="animation-delay:.5s">Z</text>`;
 
+  const tone = (c, k) => rgb(mix(skin, c, k));
+  const sh = tone([104, 54, 50], .5), deep = tone([56, 26, 28], .78), lt = tone([255, 240, 226], .55);
+  const hr = rng(4); let strands = '';
+  for (let i = 0; i < 130; i++) { const x = 256 + hr() * 90, y = 22 + hr() * 24, lean = (x - 300) * .22 + (hr() - .5) * 8, len = Math.min(14 + hr() * 26, 44 + Math.abs((x - 300) / 46) ** 3 * 38 - y);
+    if (len < 3) continue;
+    strands += `<path d="M${x.toFixed(1)} ${y.toFixed(1)} q${(lean * .5).toFixed(1)} ${(len * .5).toFixed(1)} ${lean.toFixed(1)} ${len.toFixed(1)}" stroke="${['#4a3323', '#120b07', '#6a4a30'][i % 3]}" stroke-width="${(.7 + hr()).toFixed(2)}" fill="none" stroke-linecap="round" opacity=".75"/>`; }
+  const limbs = both(`
+    <ellipse cx="184" cy="298" rx="9" ry="34" fill="${lt}" opacity=".5" transform="rotate(10 184 298)"/>
+    <path d="M198 270 C196 300 190 322 183 338" stroke="${sh}" stroke-width="6" fill="none" opacity=".45"/>
+    <ellipse cx="172" cy="338" rx="12" ry="5" fill="${sh}" opacity=".45" transform="rotate(-10 172 338)"/>
+    <ellipse cx="171" cy="374" rx="10" ry="32" fill="${lt}" opacity=".55" transform="rotate(7 171 374)"/>
+    <path d="M186 380 C182 410 176 440 170 460" stroke="${sh}" stroke-width="7" fill="none" opacity=".35"/>
+    <ellipse cx="258" cy="654" rx="22" ry="44" fill="${lt}" opacity=".5" transform="rotate(-6 258 654)"/>
+    <path d="M292 620 C288 660 286 690 284 712" stroke="${sh}" stroke-width="10" fill="none" opacity=".4"/>
+    <path d="M226 650 C232 680 240 690 244 706" stroke="${sh}" stroke-width="8" fill="none" opacity=".32"/>
+    <ellipse cx="260" cy="698" rx="14" ry="15" fill="${lt}" opacity=".62"/>
+    <path d="M246 716 Q260 724 275 716" stroke="${sh}" stroke-width="5" fill="none" opacity=".55"/>
+    <path d="M262 724 C262 760 258 790 258 816" stroke="${lt}" stroke-width="6" fill="none" opacity=".55"/>
+    <ellipse cx="244" cy="752" rx="7" ry="32" fill="${sh}" opacity=".32"/>`);
+  const details = both(`
+    <path d="M170 464 C169 476 167 486 165 494" stroke="${sh}" stroke-width="1" fill="none" opacity=".5"/>
+    <path d="M152 494 L151 513 M160 497 L160 516 M168 494 L170 512" stroke="${deep}" stroke-width="1.1" stroke-linecap="round" opacity=".62"/>
+    <ellipse cx="147" cy="505" rx="2.2" ry="3" fill="${lt}" opacity=".85"/><ellipse cx="155.5" cy="510" rx="2.2" ry="3" fill="${lt}" opacity=".85"/><ellipse cx="164.5" cy="510" rx="2.2" ry="3" fill="${lt}" opacity=".85"/><ellipse cx="172.5" cy="504" rx="2.2" ry="3" fill="${lt}" opacity=".85"/>
+    <path d="M174 470 C182 476 186 486 183 498 C181 503 176 503 175 497" fill="${skinC}" stroke="${sh}" stroke-width=".8" opacity=".95"/>
+    <path d="M150 482 q5 3 9 0 q5 3 10 -1" stroke="${sh}" stroke-width=".8" fill="none" opacity=".55"/>
+    <path d="M232 836 C234 820 252 820 278 824 C286 834 282 850 276 854 C262 858 238 858 232 850Z" fill="url(#sockG)"/>
+    <path d="M238 846 q18 5 38 0" stroke="#7f92a4" stroke-width="1" fill="none" opacity=".7"/>`);
   return `
   <defs>
-    <linearGradient id="skinG" x1="0" x2="1"><stop offset="0" stop-color="${shade}"/><stop offset=".35" stop-color="${skinC}"/><stop offset=".7" stop-color="${skinC}"/><stop offset="1" stop-color="${shade}"/></linearGradient>
-    <linearGradient id="gownG" x1="0" x2="1"><stop offset="0" stop-color="#6e9fb0"/><stop offset=".45" stop-color="#9cc9d6"/><stop offset="1" stop-color="#6a98a8"/></linearGradient>
-    <pattern id="gownDots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2" fill="#5f8fa0" opacity=".7"/><path d="M14 14 l4 4 m0 -4 l-4 4" stroke="#5f8fa0" stroke-width="1.2" opacity=".6"/></pattern>
+    ${FILTERS}
+    <radialGradient id="irisG"><stop offset="0" stop-color="#b98a52"/><stop offset=".55" stop-color="#6a4426"/><stop offset="1" stop-color="#2a180c"/></radialGradient>
+    <linearGradient id="gownG" x1="0" x2="1"><stop offset="0" stop-color="#3f9ec2"/><stop offset=".3" stop-color="#6fd0e8"/><stop offset=".55" stop-color="#8fe0f2"/><stop offset=".8" stop-color="#62c4e0"/><stop offset="1" stop-color="#3a94b8"/></linearGradient>
+    <linearGradient id="sockG" x1="0" x2="1"><stop offset="0" stop-color="#a9b6c2"/><stop offset=".5" stop-color="#f4f7fa"/><stop offset="1" stop-color="#b6c2ce"/></linearGradient>
+    <linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a281c"/><stop offset="1" stop-color="#150d08"/></linearGradient>
+    <pattern id="gownDots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1.7" fill="#2d7f9e" opacity=".55"/><path d="M14 14 l4 4 m0 -4 l-4 4" stroke="#2d7f9e" stroke-width="1" opacity=".45"/></pattern>
     <radialGradient id="bruiseG"><stop offset="0" stop-color="#4a1850"/><stop offset=".55" stop-color="#7a3a6a"/><stop offset=".85" stop-color="#9a9a40" stop-opacity=".6"/><stop offset="1" stop-color="#9a9a40" stop-opacity="0"/></radialGradient>
     <radialGradient id="swellG"><stop offset="0" stop-color="${rgb(mix(skin, [240, 140, 120], 0.35))}"/><stop offset="1" stop-color="${skinC}"/></radialGradient>
+    <clipPath id="bodyClip"><path d="${BODY}"/></clipPath>
     ${md.mask}
     <radialGradient id="floorG"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   </defs>
   ${opts.room === false ? '' : drawRoom()}
   <g id="patient" class="${cls}"><g ${md.masked ? 'mask="url(#ampMask)"' : ''}>
-    <g stroke="#3a2418" stroke-width="1.6">
-      <path d="${P.legL}" fill="url(#skinG)"/><path d="${P.legR}" fill="url(#skinG)"/>
-      <path d="M232 836 Q236 822 252 822 L276 824 Q284 836 278 848 L238 850 Q228 846 232 836Z" fill="#e8e8ee"/>
-      <path d="M368 836 Q364 822 348 822 L324 824 Q316 836 322 848 L362 850 Q372 846 368 836Z" fill="#e8e8ee"/>
-      <path d="${P.armL}" fill="url(#skinG)"/><path d="${P.armR}" fill="url(#skinG)"/>
-      <path d="M152 462 Q150 488 160 502 Q170 508 178 498 Q184 480 180 462 Z" fill="${skinC}"/>
-      <path d="M448 462 Q450 488 440 502 Q430 508 422 498 Q416 480 420 462 Z" fill="${skinC}"/>
-      <path d="${P.neck}" fill="${shade}"/>
+    <path d="${BODY}" fill="#000" opacity=".42" filter="url(#b7)" transform="translate(5 8)"/>
+    <ellipse cx="253" cy="89" rx="8.5" ry="14" fill="${skinC}"/><ellipse cx="347" cy="89" rx="8.5" ry="14" fill="${skinC}"/>
+    <path d="M250 80 q-3 9 2 18 M350 80 q3 9 -2 18" stroke="${deep}" stroke-width="1.2" fill="none" opacity=".6"/>
+    <path d="${BODY}" fill="${skinC}"/>
+    <g clip-path="url(#bodyClip)">
+      <path d="${BODY}" fill="none" stroke="${deep}" stroke-width="24" opacity=".55" filter="url(#b7)"/>
+      <path d="${BODY}" fill="none" stroke="${sh}" stroke-width="8" opacity=".7" filter="url(#b3)"/>
+      <g filter="url(#b3)">${limbs}
+        <path d="M262 112 C272 132 288 146 300 148 C312 146 328 132 338 112 L346 172 L254 172Z" fill="${deep}" opacity=".62"/>
+        <path d="M284 146 L296 176 M316 146 L304 176" stroke="${lt}" stroke-width="4" opacity=".4"/>
+      </g>
     </g>
-    <path d="M166 470 l-4 30 M434 470 l4 30" stroke="#7a4a3a" stroke-width="1" opacity=".5"/>
-    <rect x="150" y="440" width="34" height="9" rx="3" fill="#f0f0f0" stroke="#999"/><text x="153" y="447.5" style="font:6px Consolas;fill:#c03030">ID</text>
+    <path d="${BODY}" fill="none" stroke="${deep}" stroke-width=".7" opacity=".55"/>
+    ${details}
+    <rect x="148" y="442" width="36" height="9" rx="2" fill="#f4f6f8"/><rect x="151" y="445" width="20" height="3" fill="#8fa2b4"/><rect x="174" y="444" width="7" height="5" fill="#ff4a5a"/>
     <g class="${breath > 0.25 ? 'breathe-fast' : 'breathe'}" style="transform-origin:300px 300px">
-      <path d="${P.gown}" fill="url(#gownG)" stroke="#2e5060" stroke-width="2"/>
+      <path d="${P.gown}" fill="url(#gownG)"/>
       <path d="${P.gown}" fill="url(#gownDots)"/>
-      <path d="M282 162 Q300 198 318 162 Z" fill="${skinC}" stroke="#3a2418" stroke-width="1.2"/>
-      <path d="M282 162 Q300 202 318 162" stroke="#2e5060" stroke-width="4" fill="none"/>
-      <path d="M248 250 Q252 420 240 596 M352 250 Q348 420 360 596 M300 220 L300 600" stroke="#4e7a8a" stroke-width="1.4" fill="none" opacity=".55"/>
-      <path d="M206 262 L182 254 M394 262 L418 254" stroke="#2e5060" stroke-width="3"/>
-      <path d="M190 236 Q200 248 206 262 M410 236 Q400 248 394 262" stroke="#2e5060" stroke-width="1.5" fill="none" opacity=".6"/>
+      <path d="M282 162 Q300 198 318 162 Z" fill="${tone([120, 66, 58], .25)}"/>
+      <path d="M282 162 Q300 202 318 162" stroke="#1f6d8c" stroke-width="3.2" fill="none"/>
+      ${[[240, 250, 234, 600], [262, 240, 262, 610], [338, 240, 338, 610], [360, 250, 366, 600], [212, 292, 222, 470], [388, 292, 378, 470], [300, 214, 296, 606]].map(([a, b, c, d], i) => { const m = `M${a} ${b} C${a + (i % 2 ? 6 : -5)} ${b + 130} ${c + (i % 2 ? -7 : 6)} ${d - 130} ${c} ${d}`; return `<path d="${m}" stroke="#1d6f90" stroke-width="7" fill="none" opacity=".16"/><path d="${m}" stroke="#1d6f90" stroke-width="2.6" fill="none" opacity=".3"/><path d="${m}" stroke="#d2f6ff" stroke-width="1.6" fill="none" opacity=".5" transform="translate(4 0)"/>`; }).join('')}
+      <path d="${P.gown}" fill="none" stroke="#1a6a8a" stroke-width="5" opacity=".28"/><path d="${P.gown}" fill="none" stroke="#135673" stroke-width="1" opacity=".75"/>
+      <path d="M206 262 L182 254 M394 262 L418 254" stroke="#135673" stroke-width="2.6"/>
+      <path d="M190 236 Q200 248 206 262 M410 236 Q400 248 394 262" stroke="#135673" stroke-width="1.5" fill="none" opacity=".55"/>
     </g>
-    <g stroke="#3a2418" stroke-width="1.6">
-      <ellipse cx="254" cy="88" rx="8" ry="13" fill="${skinC}"/><ellipse cx="346" cy="88" rx="8" ry="13" fill="${skinC}"/>
-      <ellipse cx="300" cy="82" rx="46" ry="56" fill="url(#skinG)"/>
-    </g>
-    <path d="M252 84 C244 36 286 14 318 22 C352 30 358 64 348 86 C344 62 330 46 304 44 C286 44 268 50 262 64 C258 70 255 78 252 84 Z" fill="#2b1d16"/>
-    <path d="M262 64 C270 48 296 40 318 46" stroke="#4a3426" stroke-width="2" fill="none"/>
-    ${face(g, skinC, lipC)}
+    <path d="M252 86 C243 36 286 13 318 21 C354 29 358 64 348 88 C345 64 331 47 304 44 C286 44 268 50 262 64 C258 72 255 80 252 86 Z" fill="url(#hairG)"/>
+    <g>${strands}</g>
+    ${face(g, skinC, lipC, skin)}
     <g id="fx">${fx}</g>
   </g>
     <g id="mods">${md.over}</g>

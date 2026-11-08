@@ -90,7 +90,7 @@ export function drawMods(mods) {
     switch (m.change) {
       case 'amputate': {
         // hide the limb below the cut, then draw a bandaged stump
-        hide += arm ? `<rect x="${L ? 0 : 400}" y="${a.cut}" width="200" height="320" fill="#000"/>`
+        hide += arm ? `<rect x="${L ? 0 : 395}" y="${a.cut}" width="205" height="320" fill="#000"/>`
           : `<rect x="${L ? 220 : 300}" y="${a.cut}" width="${L ? 80 : 80}" height="220" fill="#000"/>`;
         const cx = arm ? (L ? 182 : 418) : (L ? 266 : 334), cy = a.cut, rx = arm ? 15 : 25;
         over += `<g class="stump"><path d="M${cx - rx} ${cy - 14} L${cx + rx} ${cy - 14} L${cx + rx} ${cy} Q${cx} ${cy + 18} ${cx - rx} ${cy} Z" fill="#f4f4f0" ${O}/>

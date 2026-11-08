@@ -77,14 +77,15 @@ function activeEffects() {
 function renderModes() {
   $('modes').innerHTML = MODES.map((m, i) => {
     const n = evidence.filter(e => e.system === m.id && !e.normal).length;
-    return `<button data-mode="${m.id}" class="${m.id === mode ? 'active' : ''}" style="${m.id === mode ? `border-color:${m.color}` : ''}">
-      <span class="dot" style="background:${m.color}"></span><span>${m.label}<small>[${i + 1}] ${n ? n + ' abnormal' : m.id === 'outside' ? 'look at the patient' : 'scan'}</small></span></button>`;
+    return `<button data-mode="${m.id}" class="${m.id === mode ? 'active' : ''}" style="--c:${m.color}" title="Key ${i + 1}">
+      <span class="dot" style="background:${m.color}"></span><span>${m.id === 'outside' ? 'BEDSIDE' : m.label}</span>${n ? `<i class="n">${n}</i>` : ''}</button>`;
   }).join('');
   document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
 }
 
 function setMode(m) {
   mode = m; const md = MODES.find(x => x.id === m);
+  document.body.dataset.v = m === 'outside' ? 'out' : 'scan';
   $('scan-title').innerHTML = `<span style="color:${md.color}">${m === 'outside' ? 'BEDSIDE · WHAT YOU SEE' : md.label + ' SCAN'}</span>`;
   $('scan-hint').textContent = m === 'outside' ? 'Click a body part to examine it · drag prepared treatments onto the patient' : 'Click a site: the nanobot travels there and runs the test';
   $('body').style.setProperty('--tint', m === 'outside' ? '#1d2a3a' : md.color + '30');
@@ -98,12 +99,12 @@ function drawStatic() {
     $('body').innerHTML = `<g id="pt"></g><g id="dyn"></g><g id="act"></g>`;
     drawPatientNow(true);
   } else {
-    $('body').innerHTML = `${hologram()}<g id="lay">${layer(mode)}</g>
+    $('body').innerHTML = `${hologram(mode)}<g id="lay">${layer(mode)}</g>
       <image href="/art/body_${mode}.png" x="0" y="0" width="600" height="880" preserveAspectRatio="xMidYMid meet"
         onload="document.getElementById('holo').style.display='none';document.getElementById('lay').style.display='none'" onerror="this.remove()"/>
       <g id="dyn"></g>
       <rect class="scanline" x="0" y="0" width="600" height="6" fill="${md.color}" opacity=".8"/>
-      <circle id="bot-glow" r="20" fill="#5adcff" opacity=".35"/><circle id="bot" r="9" fill="#5adcff" stroke="#fff" stroke-width="2"/>
+      <circle id="bot-glow" r="20" fill="#4fe3ff" opacity=".35"/><circle id="bot" r="9" fill="#4fe3ff" stroke="#fff" stroke-width="2"/>
       <image id="bot-art" href="/art/nanobot.png" width="44" height="44" onload="document.getElementById('bot').style.display='none'" onerror="this.remove()"/>
       <g id="act"></g>`;
   }
@@ -129,31 +130,35 @@ function drawDynamic() {
     if (clueHere) h += `<text x="${s.x - 6}" y="${s.y + 5}" style="font:bold 15px Consolas;fill:#ffd24a;paint-order:stroke;stroke:#000;stroke-width:3px">?</text>`;
     if (p && p.severity > 0.02 && onset) h += `<circle class="glow" cx="${s.x}" cy="${s.y}" r="${16 + 30 * p.severity}" fill="#ff3030" opacity=".6"/>`;
     h += `<g class="site" data-site="${id}"><circle cx="${s.x}" cy="${s.y}" r="18" fill="transparent"/>
-      <circle class="ring" cx="${s.x}" cy="${s.y}" r="${bright ? 11 : 7}" stroke="${tested ? '#5ae68c' : bright ? md.color : '#506070'}"/>
+      <circle class="ring" cx="${s.x}" cy="${s.y}" r="${bright ? 11 : 7}" stroke="${tested ? '#3dff9a' : bright ? md.color : '#506070'}"/>
       ${bright || p ? `<text x="${s.x + 15}" y="${s.y - 10}">${SITES[id].label}</text>` : ''}</g>`;
   } else if (!action) for (const [id, s] of Object.entries(SITES)) {
     const seen = evidence.some(e => e.site === id && e.system === 'outside');
     h += `<g class="site exam" data-site="${id}"><circle cx="${s.x}" cy="${s.y}" r="22" fill="transparent"/>
-      <circle class="ring" cx="${s.x}" cy="${s.y}" r="5" stroke="${seen ? '#5ae68c' : '#ffffff55'}"/></g>`;
+      <circle class="ring" cx="${s.x}" cy="${s.y}" r="5" stroke="${seen ? '#3dff9a' : '#ffffff55'}"/></g>`;
   }
-  if (testing) h += `<circle cx="${SITES[testing.site].x}" cy="${SITES[testing.site].y}" r="${10 + (testing.p * 40) % 40}" fill="none" stroke="#5adcff" stroke-width="3" opacity="${1 - (testing.p * 40 % 40) / 40}"/>
-      <text x="${SITES[testing.site].x - 40}" y="${SITES[testing.site].y + 34}" style="font:13px Consolas;fill:#5adcff">SCANNING…</text>`;
+  if (testing) h += `<circle cx="${SITES[testing.site].x}" cy="${SITES[testing.site].y}" r="${10 + (testing.p * 40) % 40}" fill="none" stroke="#4fe3ff" stroke-width="3" opacity="${1 - (testing.p * 40 % 40) / 40}"/>
+      <text x="${SITES[testing.site].x - 40}" y="${SITES[testing.site].y + 34}" style="font:13px Consolas;fill:#4fe3ff">SCANNING…</text>`;
   if ($('dyn')) $('dyn').innerHTML = h;
   document.querySelectorAll('#dyn .site').forEach(g => g.onclick = () => mode === 'outside' ? examine(g.dataset.site) : goTest(g.dataset.site));
   drawAction();
 }
 
+let chartSeen = -1;
 function renderDay() {
   const items = (C.day_events || []).map(e => ({ ...e }));
   if (onset) items.push({ time: C._onsetClock, text: 'COLLAPSED: ' + C.initial_symptoms.map(s => s.text).join(', '), bad: true });
   $('chart-bg').textContent = C.patient.background;
-  $('day').innerHTML = items.map(e => `<li class="${e.bad ? 'bad' : ''}">${esc(e.time)} &nbsp;${esc(e.text)}</li>`).join('');
+  if (chartSeen >= 0 && items.length > chartSeen && !$('left').classList.contains('open')) $('chart-btn').classList.add('flash');
+  chartSeen = items.length;
+  $('day').innerHTML = items.map(e => `<li class="${e.bad ? 'bad' : ''}"><span class="t">${esc(e.time)}</span>${esc(e.text)}</li>`).join('');
 }
 
 function renderEvidence() {
   $('evidence').innerHTML = evidence.length ? evidence.map((e, i) => `<li class="${e.key ? 'key' : e.normal ? 'normal' : ''}" data-i="${i}" title="click: tell ${FELLOW.name}">
       ${esc(SITES[e.site].label)} · ${e.system === 'outside' ? 'seen' : esc(e.system)}: ${esc(e.result)} <span class="tell">＋</span></li>`).join('')
     : '<li class="dim">Examine the patient and run scans. Click any line to tell the fellow.</li>';
+  $('notes-panel').hidden = !evidence.length;
   document.querySelectorAll('#evidence li[data-i]').forEach(li => li.onclick = () => { const e = evidence[+li.dataset.i]; openChat(evLine(e)); });
   renderModes();
 }
@@ -162,6 +167,7 @@ const evLine = (e) => `${SITES[e.site].label} (${e.system === 'outside' ? 'on ex
 function renderLog() {
   $('cascade').innerHTML = treatHistory.length ? treatHistory.map(h => `<div class="o-${h.outcome}"><b>${esc(h.name)}</b> → <span class="oc">${h.outcome.replace('_', ' ').toUpperCase()}</span><br><span class="dim">${esc(h.narration)}</span></div>`).join('')
     : '<span class="dim">Nothing given yet.</span>';
+  $('treat-panel').hidden = !treatHistory.length;
 }
 
 const VITALS = [
@@ -186,8 +192,8 @@ function drawEcg(dt) {
     if (ph > 0.30 && ph < 0.34) y = 34; else if (ph > 0.36 && ph < 0.39) y = 66; else if (ph > 0.39 && ph < 0.43) y = 8; else if (ph > 0.43 && ph < 0.47) y = 50;
     else if (ph > 0.62 && ph < 0.72) y = 40 - 7 * Math.sin((ph - 0.62) / 0.1 * Math.PI);
     if (body.arrest) { vfPhase += 0.35 + Math.random() * 0.2; y = 40 + Math.sin(vfPhase) * (14 + Math.random() * 10); }
-    ecg.fillStyle = '#06100a'; ecg.fillRect(ecgX, 0, 12, 80);
-    ecg.strokeStyle = body.status() === 'CRITICAL' ? '#ff4646' : '#5ae68c'; ecg.lineWidth = 2;
+    ecg.fillStyle = '#04090d'; ecg.fillRect(ecgX, 0, 12, 80);
+    ecg.strokeStyle = body.status() === 'CRITICAL' ? '#ff3d55' : '#5fae85'; ecg.lineWidth = 2;
     ecg.beginPath(); ecg.moveTo(ecgX - 1, lastY); ecg.lineTo(ecgX, y); ecg.stroke(); lastY = y;
   }
 }
@@ -244,19 +250,19 @@ function renderChat() {
     const r = m.reply;
     let h = `<div class="msg fellow"><b>${FELLOW.name}</b><div>${esc(r ? r.say : m.text)}</div>`;
     if (r?.differential?.length) h += `<div class="ddx"><div class="cap">DIFFERENTIAL</div>${r.differential.map(d => `<div class="dd"><span class="lk ${d.likelihood}">${d.likelihood}</span><b>${esc(d.condition)}</b><small>${esc(d.reasoning)}</small></div>`).join('')}</div>`;
-    if (r?.suggest_scan) h += `<div class="sugg">🔎 Next test: ${esc(r.suggest_scan)}</div>`;
+    if (r?.suggest_scan) h += `<div class="sugg">Next test: ${esc(r.suggest_scan)}</div>`;
     if (r?.treatments?.length) h += `<div class="cap">TREATMENT OPTIONS</div>` + r.treatments.map((tr, ti) => {
       const inTray = tray.some(x => x.tr.name === tr.name);
       return `<div class="tx"><div class="ic">${ICONS[tr.kind] || ICONS.injection}</div><div class="body"><b>${esc(tr.name)}</b> <small class="dim">${esc(tr.detail)}</small>
         <small>for: ${esc(tr.treats)}</small><small class="risk">risk: ${esc(tr.risk)}</small></div>
-        <button class="prep" data-m="${mi}" data-t="${ti}" ${inTray ? 'disabled' : ''}>${inTray ? 'IN HAND ✓' : 'PREPARE'}</button></div>`;
+        <button class="prep" data-m="${mi}" data-t="${ti}" ${inTray ? 'disabled' : ''}>${inTray ? 'IN HAND' : 'PREPARE'}</button></div>`;
     }).join('');
     return h + '</div>';
   }).join('') + (chatBusy ? `<div class="msg fellow typing"><b>${FELLOW.name}</b><div>thinking<span class="dots">...</span></div></div>` : '');
   document.querySelectorAll('#chat-log .prep').forEach(b => b.onclick = () => prepare(chat[+b.dataset.m].reply.treatments[+b.dataset.t]));
   $('chat-log').scrollTop = 1e9;
   const unshared = evidence.slice(sharedUpTo);
-  $('paste-notes').textContent = unshared.length ? `📋 Paste my ${unshared.length} new note${unshared.length > 1 ? 's' : ''}` : '📋 No new notes';
+  $('paste-notes').textContent = unshared.length ? `Paste my ${unshared.length} new note${unshared.length > 1 ? 's' : ''}` : 'No new notes';
   $('paste-notes').disabled = !unshared.length;
 }
 
@@ -289,11 +295,11 @@ async function sendChat() {
 function offline(why, waking = false) {
   const b = document.createElement('div'); b.id = 'offline-banner';
   const fix = API.includes('localhost') ? ' Run: cd backend && python -m uvicorn main:app --port 8010, then reload.' : ' Try reloading in a minute.';
-  b.textContent = waking ? `⏳ ${why}…` : `⚠ OFFLINE: ${why}. The fellow, outcomes and art are canned.${fix}`;
+  b.textContent = waking ? `Connecting: ${why}.` : `Offline: ${why}. The fellow, outcomes and art are canned.${fix}`;
   document.body.appendChild(b);
 }
 function offlineFellow() {
-  return { say: `⚠ OFFLINE MODE: the Claude backend (port 8010) is not running, so these are the case's 4 canned options. Start the backend for the real fellow.`, differential: [], suggest_scan: '',
+  return { say: `Offline mode: the Claude backend (port 8010) is not running, so these are the case's 4 canned options. Start the backend for the real fellow.`, differential: [], suggest_scan: '',
     treatments: C.treatments.map(x => ({ name: x.name, detail: '', kind: guessKind(x.name), target_site: C.root_site, treats: '?', risk: 'unknown' })) };
 }
 
@@ -312,9 +318,10 @@ function prepare(tr) {
   fetchArt(item.tr).then(svg => { if (svg) { item.svg = svg; renderTray(); } });
 }
 function renderTray() {
+  $('tray-wrap').hidden = !tray.length;
   $('tray').innerHTML = tray.length ? tray.map(it => `<div class="item" data-id="${it.id}" title="drag onto the patient">
       <div class="ic">${it.svg || ICONS[it.tr.kind]}</div><div><b>${esc(it.tr.name)}</b><small>${esc(ACTIONS[it.tr.kind].hint || 'drag onto the patient')}${it.svg ? '' : ' · drawing…'}</small></div>
-      <span class="x" data-x="${it.id}">✕</span></div>`).join('')
+      <span class="x" data-x="${it.id}">x</span></div>`).join('')
     : `<span class="dim">Your hands are empty. Page ${FELLOW.name} [TAB] to get treatment options, then PREPARE them.</span>`;
   document.querySelectorAll('#tray .item').forEach(el => el.onpointerdown = (ev) => { if (ev.target.dataset.x) return; startDrag(tray.find(x => x.id === el.dataset.id), ev); });
   document.querySelectorAll('#tray .x').forEach(x => x.onclick = () => { tray = tray.filter(i => i.id !== x.dataset.x); renderTray(); });
@@ -379,7 +386,7 @@ function drawAction() {
     ${a.cfg.cut ? `<line x1="${a.x - 45}" y1="${a.y}" x2="${a.x + 45}" y2="${a.y}" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5"/>
       <line x1="${a.x - 45}" y1="${a.y}" x2="${a.x - 45 + 90 * Math.min(1, prog)}" y2="${a.y}" stroke="#c0101a" stroke-width="4"/>` : ''}
     <circle cx="${a.x}" cy="${a.y}" r="${R}" fill="#00000066" stroke="#ffffff33" stroke-width="6"/>
-    <circle cx="${a.x}" cy="${a.y}" r="${R}" fill="none" stroke="${a.charged ? '#ff4a3c' : '#5adcff'}" stroke-width="6" stroke-dasharray="${circ * Math.min(1, prog)} ${circ}" transform="rotate(-90 ${a.x} ${a.y})"/>
+    <circle cx="${a.x}" cy="${a.y}" r="${R}" fill="none" stroke="${a.charged ? '#ff4a3c' : '#4fe3ff'}" stroke-width="6" stroke-dasharray="${circ * Math.min(1, prog)} ${circ}" transform="rotate(-90 ${a.x} ${a.y})"/>
     <svg x="${a.x - 34}" y="${a.y - 34}" width="68" height="68" viewBox="0 0 120 120">${art.replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>
     <text x="${a.x}" y="${a.y + R + 22}" text-anchor="middle" class="act-label">${esc(label)}${a.cfg.clicks ? ` (${a.clicks}/${a.cfg.clicks})` : ''}</text>
     <text x="${a.x}" y="${a.y + R + 40}" text-anchor="middle" class="act-sub">${esc(a.item.tr.name)} → ${esc(a.where)} · Esc to cancel</text>`;
@@ -457,7 +464,7 @@ function end(won) {
       <p><b>Root cause:</b> ${esc(C.root_cause)}</p><p>${esc(C.post_mortem)}</p>
       <p><b>Time to ${won ? 'resolution' : 'death'}:</b> ${Math.round(t)} min · <b>Exams + scans:</b> ${evidence.length} · <b>Key clues:</b> ${keyFound}/${keyTotal} · <b>Treatments:</b> ${treatHistory.length} (${treatHistory.filter(h => /worse|lethal/.test(h.outcome)).length} made it worse)</p>
       <h3>Incident timeline</h3>
-      <div class="tl">${log.map(l => `<div><span class="t">${l.t}</span> ${l.kind === 'cascade' ? '<b style="color:#ff6b6b">CASCADE</b> ' : l.kind === 'treat' ? '<b style="color:#ffb43c">TREAT</b> ' : l.kind === 'chat' ? '<b style="color:#5adcff">PAGE</b> ' : ''}${esc(l.text)}</div>`).join('')}</div>
+      <div class="tl">${log.map(l => `<div><span class="t">${l.t}</span> ${l.kind === 'cascade' ? '<b style="color:#ff3d55">CASCADE</b> ' : l.kind === 'treat' ? '<b style="color:#ffb02e">TREAT</b> ' : l.kind === 'chat' ? '<b style="color:#4fe3ff">PAGE</b> ' : ''}${esc(l.text)}</div>`).join('')}</div>
       <button onclick="location.reload()">NEXT PATIENT</button></div>`;
     $('overlay').classList.add('show');
   }, 2200);
@@ -492,7 +499,7 @@ function frame(now) {
     }
   }
   if (C) {
-    $('patient-line').textContent = `PATIENT: ${C.patient.name.toUpperCase()}, ${C.patient.age} · CLOCK ${clock()}${paused() ? ' ⏸' : ''} · ${body.status()}`;
+    $('patient-line').textContent = `PATIENT: ${C.patient.name.toUpperCase()}, ${C.patient.age} · CLOCK ${clock()}${paused() ? ' (PAUSED)' : ''} · ${body.status()}`;
     const b = $('bot'), g = $('bot-glow');
     if (b) { b.setAttribute('cx', bot.x); b.setAttribute('cy', bot.y); g.setAttribute('cx', bot.x); g.setAttribute('cy', bot.y); }
     const ba = $('bot-art'); if (ba) { ba.setAttribute('x', bot.x - 22); ba.setAttribute('y', bot.y - 22); }
@@ -527,8 +534,11 @@ window.addEventListener('keydown', (e) => {
   $('fellow-name').textContent = FELLOW.full; $('fellow-role').textContent = FELLOW.role; $('page-btn').textContent = `PAGE ${FELLOW.name.toUpperCase()} [TAB]`;
   $('page-btn').onclick = () => openChat();
   const own = () => { const n = $('own-in').value.trim(); if (!n) return; $('own-in').value = '';
-    prepare({ name: n, detail: 'your call', kind: $('own-kind').value === 'auto' ? guessKind(n) : $('own-kind').value, target_site: 'heart', treats: 'lead\'s own decision', risk: 'unknown: nobody suggested this' }); };
-  $('own-btn').onclick = own; $('own-in').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') own(); });
+    prepare({ name: n, detail: 'your call', kind: $('own-kind').value === 'auto' ? guessKind(n) : $('own-kind').value, target_site: 'heart', treats: 'lead\'s own decision', risk: 'unknown: nobody suggested this' }); $('own').classList.remove('open'); };
+  $('own-btn').onclick = own; $('own-in').addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') own(); if (e.key === 'Escape') $('own').classList.remove('open'); });
+  $('own-toggle').onclick = () => { if ($('own').classList.toggle('open')) $('own-in').focus(); };
+  $('chart-btn').onclick = () => { $('left').classList.toggle('open'); $('chart-btn').classList.remove('flash'); };
+  $('body').addEventListener('pointerdown', () => document.body.classList.add(mode === 'outside' ? 'h-out' : 'h-scan'));
   $('chat-close').onclick = closeChat; $('chat-send').onclick = sendChat;
   $('chat-in').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
   $('paste-notes').onclick = () => { const lines = evidence.slice(sharedUpTo).map(evLine); sharedUpTo = evidence.length; $('chat-in').value += (($('chat-in').value ? '\n' : '') + lines.join('\n')); renderChat(); $('chat-in').focus(); };
