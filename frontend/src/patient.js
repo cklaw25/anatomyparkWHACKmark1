@@ -15,6 +15,7 @@ const OUT = {
   blood: [176, 360], bone_marrow: [336, 650], joints: [190, 440], skin: [414, 360], left_leg: [266, 740], right_leg: [334, 740],
 };
 import { drawMods } from './mods.js';
+import { drawRoom } from './room.js';
 export const MOUTH = { x: 300, y: 114 };
 
 // a few deterministic random numbers so rashes don't flicker
@@ -141,7 +142,7 @@ export function drawPatient(effects, opts = {}) {
     ${md.mask}
     <radialGradient id="floorG"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   </defs>
-  <ellipse cx="300" cy="852" rx="120" ry="16" fill="url(#floorG)"/>
+  ${opts.room === false ? '' : drawRoom()}
   <g id="patient" class="${cls}"><g ${md.masked ? 'mask="url(#ampMask)"' : ''}>
     <g stroke="#3a2418" stroke-width="1.6">
       <path d="${P.legL}" fill="url(#skinG)"/><path d="${P.legR}" fill="url(#skinG)"/>
