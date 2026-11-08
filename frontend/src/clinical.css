@@ -1,0 +1,154 @@
+/* design-clinical branch: look like real ward software (bedside monitor + patient chart), not a generated landing page.
+   Rules: flat surfaces, hairline borders, 2px corners, no glow / drop shadows / radial orbs / hover motion / emoji,
+   one sans family (DIN-style Bahnschrift, like hospital signage), colour only where a real monitor uses it. */
+:root {
+  --bg: #15171a; --panel: #1b1e22; --panel2: #202428; --line: #2f343a; --line2: #3b4148;
+  --white: #dcdfe2; --dim: #868d94; --cyan: #9fb3c4; --red: #d4473f; --amber: #d6a03c; --green: #5aa56e;
+  --hr: #5fbf72; --bp: #e06a5f; --spo2: #6fb3d6; --rr: #d8c35a; --temp: #dcdfe2;
+}
+html, body { background: var(--bg); font-family: "Bahnschrift", "Segoe UI", Arial, sans-serif; font-variant-numeric: tabular-nums; }
+*, *::before, *::after { box-shadow: none !important; text-shadow: none !important; transition: none; }
+button, input, select, textarea { font-family: inherit !important; }
+
+/* header = the ward system's patient band */
+header#top { height: 48px; background: #0f1113; border-bottom: 1px solid var(--line); gap: 18px; }
+.brand { color: var(--white); font-size: 16px; font-weight: 600; letter-spacing: 3px; }
+.brand small { display: none; }
+#patient-line { font-size: 14px; color: var(--white); letter-spacing: .3px; }
+.sev { border: 1px solid var(--line2); border-radius: 2px; font-size: 12px; letter-spacing: 1px; padding: 4px 10px; }
+.sev.on { animation: none; background: var(--red); color: #fff; border-color: var(--red); }
+#grid { height: calc(100vh - 48px); gap: 0; padding: 0; grid-template-columns: 220px 1fr 380px; }
+#veil { inset: 48px min(520px, 100vw) 0 0; } body.busy #veil { inset: 48px 0 0 0; }
+#chat { top: 48px; }
+
+/* panels: chart sections divided by rules, not floating cards */
+#left, #right { background: var(--panel); border-right: 1px solid var(--line); }
+#right { border-right: 0; border-left: 1px solid var(--line); }
+.panel { background: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; margin: 0; padding: 12px 14px; }
+.panel h3 { color: var(--dim); font-size: 11px; font-weight: 600; letter-spacing: 1.4px; margin-bottom: 10px; text-transform: uppercase; }
+
+/* view switcher: plain list, active = filled row (no rainbow dots) */
+#modes button { border: 0; border-radius: 0; background: none; margin: 0; padding: 7px 8px; font-size: 13px; color: var(--dim); border-left: 2px solid transparent; }
+#modes button .dot { display: none; }
+#modes button.active { background: var(--panel2); color: var(--white); border-width: 0 !important; border-color: transparent !important; outline: 1px solid var(--line2); }
+#modes button:hover { color: var(--white); }
+#modes button small { font: 11px "Bahnschrift", sans-serif; }
+.chart-bg { font: 13px/1.45 "Segoe UI", sans-serif; color: var(--white); }
+#day { font: 12.5px/1.4 "Segoe UI", sans-serif; }
+#day li { border-left: 0; padding: 3px 0 3px 52px; }
+#day li::before { display: none; }
+#day li b, #day li .t { position: absolute; left: 0; color: var(--dim); font-weight: 400; }
+#day li.clue { color: var(--amber); } #day li.bad { color: var(--red); }
+
+/* centre: bed space */
+#centre { padding: 10px 14px 12px; background: var(--bg); }
+#scan-title { font-size: 13px; letter-spacing: 1.5px; color: var(--white); }
+#scan-title span { color: var(--white) !important; }
+#scan-hint { font: 12px "Segoe UI", sans-serif; }
+svg#body { background: none !important; }
+#bot-glow { display: none; }
+.site text { font: 12px "Bahnschrift", sans-serif; stroke-width: 0; fill: var(--white); }
+.glow { animation: none; opacity: .8; }
+.fx-label { stroke-width: 2px; }
+
+/* tray + "your call" */
+#tray-wrap { border: 1px solid var(--line); border-radius: 2px; background: var(--panel); padding: 6px 10px 8px; }
+.cap { font: 600 10.5px "Bahnschrift", sans-serif; letter-spacing: 1.3px; text-transform: uppercase; }
+#tray { font: 13px "Segoe UI", sans-serif; }
+#tray .item { border: 1px solid var(--line2); border-radius: 2px; background: var(--panel2); }
+#tray .item:hover { background: var(--panel2); border-color: var(--white); }
+#tray .item .x { border-radius: 2px; background: var(--panel); color: var(--dim); border: 1px solid var(--line2); }
+.ghost { filter: none; }
+#own-in, #own select, #chat-in { background: var(--bg); border: 1px solid var(--line2); border-radius: 2px; font: 13px "Segoe UI", sans-serif !important; }
+#own-btn { background: var(--panel2); border: 1px solid var(--line2); border-radius: 2px; letter-spacing: 1px; }
+#own-btn:hover { border-color: var(--white); }
+
+/* pager strip */
+#attending { border: 1px solid var(--line); border-top: 2px solid var(--amber); border-radius: 0; background: var(--panel); min-height: 64px; padding: 8px 12px; }
+#attending .face, .chat-head .face, .face.big { border-radius: 2px; border: 1px solid var(--line2); background-color: var(--panel2); color: var(--white); font-size: 15px; }
+#attending b { color: var(--white); font-weight: 600; }
+.live { background: none; color: var(--amber); border: 1px solid var(--amber); border-radius: 2px; font-size: 10px; letter-spacing: 1px; }
+#att-text { font: 14px/1.4 "Segoe UI", sans-serif; }
+#page-btn { border-radius: 2px; background: var(--amber); color: #15110a; font-size: 13px; letter-spacing: 1px; padding: 10px 14px; }
+#page-btn:hover { filter: none; background: #e3ad4a; }
+
+/* monitor: black screen, conventional parameter colours, big tabular digits */
+.panel.vit { background: #0b0c0d; }
+#ecg { background: #0b0c0d; border-radius: 0; border-bottom: 1px solid #1f2326; height: 64px; }
+#vitals { gap: 0; grid-template-columns: repeat(3, 1fr); }
+.vital { padding: 6px 8px 8px; border-right: 1px solid #1f2326; border-bottom: 1px solid #1f2326; }
+.vital small { font: 600 10.5px "Bahnschrift", sans-serif; letter-spacing: 1px; }
+.vital span { font-size: 30px; font-weight: 300; }
+.vital em { font: 11px "Bahnschrift", sans-serif; color: var(--dim); }
+.vital:nth-child(1) span, .vital:nth-child(1) small { color: var(--hr); }
+.vital:nth-child(2) span, .vital:nth-child(2) small { color: var(--bp); }
+.vital:nth-child(3) span, .vital:nth-child(3) small { color: var(--spo2); }
+.vital:nth-child(4) span, .vital:nth-child(4) small { color: var(--temp); }
+.vital:nth-child(5) span, .vital:nth-child(5) small { color: var(--rr); }
+.vital.warn { background: #2a2210; } .vital.bad { background: #3a1512; }
+.vital.bad span, .vital.warn span { color: inherit; }
+.vital.bad span { color: #ff8a80 !important; } .vital.warn span { color: #f0c560 !important; }
+#vit-status { border-radius: 2px; font-size: 10.5px; letter-spacing: 1px; color: var(--dim); }
+#vit-status.STABLE { color: var(--green); border-color: var(--green); }
+#vit-status.CARDIAC { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { background: transparent; color: var(--red); } }
+
+/* notes + treatments given: plain charted lines */
+#evidence { font: 13px/1.4 "Segoe UI", sans-serif; }
+#evidence li { padding: 5px 0 5px 12px; border-bottom: 1px solid var(--line); }
+#evidence li::before { content: ''; width: 4px; height: 4px; top: 12px; background: var(--dim); border-radius: 0; }
+#evidence li.key::before { background: var(--green); }
+#evidence li[data-i]:hover { background: var(--panel2); }
+#evidence .tell { color: var(--dim); font-size: 11px; }
+#cascade { font: 13px/1.4 "Segoe UI", sans-serif; }
+#cascade div { border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.cascade, .treat { border-color: var(--line); }
+
+/* outcome notice */
+#outcome { background: var(--panel); border: 1px solid var(--line2); border-radius: 2px; font: 13.5px/1.4 "Segoe UI", sans-serif; }
+#outcome.show { animation: none; }
+#outcome .big { font: 600 15px "Bahnschrift", sans-serif; letter-spacing: 2px; }
+#outcome.good { border-top: 3px solid var(--green); border-color: var(--line2) var(--line2) var(--line2); border-top-color: var(--green); }
+#outcome.bad { border-top: 3px solid var(--red); border-color: var(--line2); border-top-color: var(--red); }
+#outcome.meh { border-top: 3px solid var(--amber); }
+
+/* pause */
+#veil { background: rgba(10, 11, 12, .55); }
+#veil div { font: 600 15px "Bahnschrift", sans-serif; letter-spacing: 4px; color: var(--white); background: var(--panel); border: 1px solid var(--line2); padding: 10px 18px; }
+#veil small { font: 12px "Segoe UI", sans-serif; color: var(--dim); margin-top: 4px; letter-spacing: 0; }
+body.busy #veil div::after { content: ''; }
+
+/* chat: a pager/message log, not bubbles */
+#chat { background: var(--panel); border-left: 1px solid var(--line2); transition: none; }
+.chat-head { padding: 10px 14px; }
+.chat-head b { color: var(--white); font-size: 15px; font-weight: 600; }
+.chat-head small { font: 12px "Segoe UI", sans-serif; }
+.chat-head button { border-radius: 2px; width: auto; padding: 0 10px; font-size: 12px; letter-spacing: 1px; color: var(--dim); }
+#chat-log { font: 13.5px/1.45 "Segoe UI", sans-serif; gap: 14px; }
+.msg { border-radius: 0; max-width: 100%; padding: 0 0 0 0; background: none !important; border: 0 !important; }
+.msg.lead { align-self: stretch; color: var(--white); }
+.msg.lead::before { content: 'YOU'; display: block; font: 600 10.5px "Bahnschrift", sans-serif; letter-spacing: 1.3px; color: var(--dim); margin-bottom: 2px; }
+.msg.fellow > b { color: var(--amber); font: 600 10.5px "Bahnschrift", sans-serif; letter-spacing: 1.3px; display: block; margin-bottom: 2px; }
+.ddx { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+.lk { border-radius: 2px; font: 600 9.5px "Bahnschrift", sans-serif; letter-spacing: .8px; }
+.lk.high { background: none; color: #f08a80; border: 1px solid #7a3530; }
+.lk.medium { background: none; color: #e0b860; border: 1px solid #6a5420; }
+.lk.low { background: none; color: var(--dim); border: 1px solid var(--line2); }
+.sugg { color: var(--white); border-top: 1px solid var(--line); padding-top: 6px; }
+.tx { border-radius: 2px; background: var(--panel2); border: 1px solid var(--line); }
+.tx .risk { color: #e0897f; }
+.prep { border-radius: 2px; letter-spacing: 1px; }
+.prep:disabled { background: none; color: var(--green); border: 1px solid #355a3e; }
+#paste-notes { border-radius: 2px; background: none; color: var(--dim); font: 12px "Segoe UI", sans-serif !important; }
+#paste-notes:hover { color: var(--white); }
+#chat-send { border-radius: 2px; background: var(--white); color: var(--bg); letter-spacing: 1px; }
+
+/* start card + offline notice */
+#overlay { background: rgba(12, 13, 14, .94); }
+.card { border: 1px solid var(--line2); border-top: 3px solid var(--red); border-radius: 2px; background: var(--panel); font: 14.5px/1.5 "Segoe UI", sans-serif; }
+.card h1 { color: var(--white); font: 600 22px "Bahnschrift", sans-serif; letter-spacing: 5px; }
+.card .tag { color: var(--dim); font-style: normal; }
+.cold { border-left: 0; border: 1px solid var(--line); background: var(--bg); font: 14px/1.5 "Segoe UI", sans-serif; }
+button#start, .card button { border-radius: 2px; font: 600 14px "Bahnschrift", sans-serif; letter-spacing: 2px; }
+.pm .tl div { font: 13px "Segoe UI", sans-serif; }
+#offline-banner { border-radius: 2px; border: 1px solid var(--red); background: #2a1210; font: 13px "Segoe UI", sans-serif; }
